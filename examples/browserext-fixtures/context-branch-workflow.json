@@ -1,0 +1,26 @@
+{
+  "contextQuery": "account login form",
+  "steps": [
+    {
+      "name": "branch on login form presence",
+      "kind": "branch",
+      "condition": {
+        "selectorExists": "#login-form"
+      },
+      "then": [
+        {
+          "name": "login form branch matched",
+          "kind": "require-text",
+          "text": "Account Login Form"
+        }
+      ],
+      "else": [
+        {
+          "name": "fallback branch matched",
+          "kind": "require-text",
+          "text": "Newsletter Signup"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Overlay Collection Widgets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin: 24px; }
+    dialog { border: 1px solid #999; border-radius: 12px; padding: 16px; width: 320px; }
+    .menu { display: none; border: 1px solid #bbb; padding: 8px; width: 220px; margin: 12px 0; }
+    .menu[data-open="true"] { display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+    .card { border: 1px solid #bbb; border-radius: 10px; padding: 12px; }
+    .status { margin-top: 18px; padding: 12px; background: #f5f5f5; border-radius: 8px; white-space: pre-wrap; }
+    details { margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Overlay Collection Widgets</h1>
+  <button id="open-dialog">Open Preferences</button>
+  <button id="open-menu">Open Theme Menu</button>
+
+  <dialog id="preferences-dialog" aria-label="Preferences dialog">
+    <h2>Preferences dialog</h2>
+    <p>Dismiss this before continuing.</p>
+    <button id="dismiss-dialog">Dismiss</button>
+    <button id="confirm-dialog">Confirm</button>
+  </dialog>
+
+  <div id="theme-menu" class="menu" role="menu" aria-label="Theme menu" data-open="false">
+    <button role="menuitem" data-theme="light">Light</button>
+    <button role="menuitem" data-theme="dark">Dark</button>
+    <button role="menuitem" data-theme="system">System</button>
+  </div>
+
+  <details id="advanced-disclosure">
+    <summary>Advanced settings</summary>
+    <p>Extra controls become visible here.</p>
+  </details>
+
+  <section aria-label="Search results" class="cards" data-collection="search-results">
+    <article class="card">
+      <h3>Result Alpha</h3>
+      <p>First result card.</p>
+      <button data-item="Result Alpha">Open Result Alpha</button>
+    </article>
+    <article class="card">
+      <h3>Result Beta</h3>
+      <p>Second result card.</p>
+      <button data-item="Result Beta">Open Result Beta</button>
+    </article>
+  </section>
+
+  <div id="status" class="status">status: idle</div>
+
+  <script>
+    const dialog = document.getElementById('preferences-dialog');
+    const menu = document.getElementById('theme-menu');
+    const status = document.getElementById('status');
+    const disclosure = document.getElementById('advanced-disclosure');
+
+    function setStatus(payload) {
+      status.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    document.getElementById('open-dialog').addEventListener('click', () => {
+      dialog.showModal();
+      setStatus({ dialog: 'open' });
+    });
+
+    document.getElementById('dismiss-dialog').addEventListener('click', () => {
+      dialog.close();
+      setStatus({ dialog: 'dismissed' });
+    });
+
+    document.getElementById('confirm-dialog').addEventListener('click', () => {
+      dialog.close();
+      setStatus({ dialog: 'confirmed' });
+    });
+
+    document.getElementById('open-menu').addEventListener('click', () => {
+      menu.dataset.open = menu.dataset.open === 'true' ? 'false' : 'true';
+      setStatus({ menu: menu.dataset.open === 'true' ? 'open' : 'closed' });
+    });
+
+    menu.querySelectorAll('[role="menuitem"]').forEach((button) => {
+      button.addEventListener('click', () => {
+        menu.dataset.open = 'false';
+        setStatus({ theme: button.dataset.theme });
+      });
+    });
+
+    disclosure.addEventListener('toggle', () => {
+      setStatus({ disclosure: disclosure.open ? 'expanded' : 'collapsed' });
+    });
+
+    document.querySelectorAll('[data-item]').forEach((button) => {
+      button.addEventListener('click', () => {
+        setStatus({ selectedItem: button.dataset.item });
+      });
+    });
+  </script>
+</body>
+</html>

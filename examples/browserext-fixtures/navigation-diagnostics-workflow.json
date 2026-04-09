@@ -1,0 +1,21 @@
+{
+  "steps": [
+    {
+      "kind": "navigate",
+      "name": "open context fixture",
+      "url": "http://127.0.0.1:8765/context-disambiguation.html"
+    },
+    {
+      "kind": "page-state",
+      "name": "capture page state",
+      "limit": 10,
+      "maxDepth": 2,
+      "maxChildren": 10
+    },
+    {
+      "kind": "next-actions",
+      "name": "capture next actions",
+      "limit": 10
+    }
+  ]
+}

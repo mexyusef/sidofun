@@ -1,0 +1,27 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "enumerate frames",
+      "kind": "frames"
+    },
+    {
+      "name": "enumerate form contexts",
+      "kind": "form-contexts",
+      "limit": 20
+    },
+    {
+      "name": "enumerate actionables",
+      "kind": "actionables",
+      "limit": 20
+    },
+    {
+      "name": "extract markdown",
+      "kind": "markdown"
+    },
+    {
+      "name": "extract readability",
+      "kind": "readability"
+    }
+  ]
+}

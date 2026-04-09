@@ -1,0 +1,33 @@
+{
+  "contextQuery": "account login form",
+  "steps": [
+    {
+      "name": "fill login email",
+      "kind": "fill",
+      "query": "Email address",
+      "value": "usef@example.com"
+    },
+    {
+      "name": "fill login password",
+      "kind": "fill",
+      "query": "Password",
+      "value": "secret123"
+    },
+    {
+      "name": "enable remember",
+      "kind": "toggle",
+      "query": "Remember login",
+      "desiredState": "on"
+    },
+    {
+      "name": "submit login",
+      "kind": "submit-query",
+      "query": "Sign in to account"
+    },
+    {
+      "name": "verify login result",
+      "kind": "require-text",
+      "text": "\"form\": \"login-form\""
+    }
+  ]
+}

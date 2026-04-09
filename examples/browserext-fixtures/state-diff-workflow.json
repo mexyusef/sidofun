@@ -1,0 +1,27 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "baseline page state",
+      "kind": "page-state",
+      "saveAs": "baselineState"
+    },
+    {
+      "name": "capture baseline diff",
+      "kind": "state-diff",
+      "against": "baselineState",
+      "saveAs": "initialDiff"
+    },
+    {
+      "name": "capture current url",
+      "kind": "capture-url",
+      "saveAs": "currentUrl"
+    },
+    {
+      "name": "assert url exists",
+      "kind": "assert-output",
+      "output": "currentUrl",
+      "exists": true
+    }
+  ]
+}

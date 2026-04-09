@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "timeoutMs": 30000,
+    "intervalMs": 1000
+  },
+  "steps": [
+    {
+      "name": "wait theme menu",
+      "kind": "wait-menu",
+      "query": "theme",
+      "optional": true
+    },
+    {
+      "name": "assert dark option exists",
+      "kind": "assert-menu-option",
+      "menu": "theme",
+      "option": "dark",
+      "optional": true
+    },
+    {
+      "name": "wait disclosure open",
+      "kind": "wait-disclosure",
+      "query": "advanced settings",
+      "state": "open",
+      "optional": true
+    },
+    {
+      "name": "assert disclosure state",
+      "kind": "assert-disclosure-state",
+      "query": "advanced settings",
+      "state": "open",
+      "optional": true
+    }
+  ]
+}

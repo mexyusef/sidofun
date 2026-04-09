@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sidofun Browserext Control Widgets Fixture</title>
+    <style>
+      body { font-family: sans-serif; margin: 24px; line-height: 1.4; }
+      form { display: grid; gap: 14px; max-width: 640px; }
+      fieldset { display: grid; gap: 8px; border: 1px solid #ccc; padding: 12px; }
+      label { display: grid; gap: 6px; }
+      .segmented { display: flex; gap: 8px; }
+      .segmented button[aria-pressed="true"] { background: #dbeafe; border-color: #60a5fa; }
+      .toggle-row { display: flex; align-items: center; gap: 10px; }
+      #result { white-space: pre-wrap; border: 1px solid #ddd; padding: 12px; background: #fafafa; margin-top: 24px; }
+    </style>
+  </head>
+  <body>
+    <h1>Browserext Control Widgets Fixture</h1>
+    <p>This page validates radio, toggle, date, time, range, and segmented control flows.</p>
+
+    <form id="control-form">
+      <label>
+        Start date
+        <input id="start-date" name="startDate" type="date" />
+      </label>
+
+      <label>
+        Preferred time
+        <input id="preferred-time" name="preferredTime" type="time" />
+      </label>
+
+      <label>
+        Priority slider
+        <input id="priority-range" name="priority" type="range" min="1" max="10" step="1" value="5" />
+      </label>
+
+      <fieldset id="plan-group">
+        <legend>Plan</legend>
+        <label><input type="radio" name="plan" value="basic" /> Basic</label>
+        <label><input type="radio" name="plan" value="pro" /> Pro</label>
+        <label><input type="radio" name="plan" value="enterprise" /> Enterprise</label>
+      </fieldset>
+
+      <div class="toggle-row">
+        <label for="remember-toggle">Remember me</label>
+        <input id="remember-toggle" name="remember" type="checkbox" />
+      </div>
+
+      <div>
+        <div>Theme</div>
+        <div class="segmented" role="group" aria-label="Theme">
+          <button type="button" data-segment="light" aria-pressed="true">Light</button>
+          <button type="button" data-segment="dark" aria-pressed="false">Dark</button>
+          <button type="button" data-segment="system" aria-pressed="false">System</button>
+        </div>
+        <input id="theme-input" name="theme" type="hidden" value="light" />
+      </div>
+
+      <button id="control-submit" type="submit">Save controls</button>
+    </form>
+
+    <div id="result">No submission yet.</div>
+
+    <script>
+      const segmentButtons = Array.from(document.querySelectorAll('[data-segment]'));
+      const themeInput = document.getElementById('theme-input');
+
+      segmentButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          segmentButtons.forEach((entry) => entry.setAttribute('aria-pressed', entry === button ? 'true' : 'false'));
+          themeInput.value = button.getAttribute('data-segment') || 'light';
+        });
+      });
+
+      document.getElementById('control-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const result = Object.fromEntries(new FormData(form).entries());
+        result.priority = document.getElementById('priority-range').value;
+        result.remember = document.getElementById('remember-toggle').checked;
+        document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+      });
+    </script>
+  </body>
+</html>

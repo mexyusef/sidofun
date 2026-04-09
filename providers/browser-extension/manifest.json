@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Sidofun Browser Provider",
+  "version": "0.1.0",
+  "description": "Thin Chrome provider for Sidofun browser automation.",
+  "permissions": [
+    "tabs",
+    "alarms",
+    "storage",
+    "scripting",
+    "debugger",
+    "downloads",
+    "cookies",
+    "activeTab",
+    "webRequest",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:9995/*",
+    "http://localhost:9995/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "dist/background.js",
+    "type": "module"
+  },
+  "options_page": "src/options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "dist/content-script.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "action": {
+    "default_title": "Sidofun Browser Provider"
+  }
+}

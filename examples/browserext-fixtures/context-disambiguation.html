@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Context Disambiguation Fixture</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; }
+      main { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+      form, section { border: 1px solid #ccc; border-radius: 12px; padding: 1rem; }
+      label { display: block; margin: 0.5rem 0; }
+      input, button { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+      pre { background: #f4f4f4; padding: 1rem; border-radius: 12px; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Context Disambiguation Fixture</h1>
+    <p>This page intentionally contains overlapping login and signup forms so browserext context planning can pick the right form.</p>
+    <main>
+      <form id="newsletter-form" action="#newsletter">
+        <h2>Newsletter Signup</h2>
+        <label>Email
+          <input name="newsletter_email" type="email" placeholder="newsletter email" />
+        </label>
+        <button type="submit">Join newsletter</button>
+      </form>
+      <form id="login-form" action="#login">
+        <h2>Account Login Form</h2>
+        <label>Email address
+          <input name="login_email" type="email" placeholder="login email" />
+        </label>
+        <label>Password
+          <input name="login_password" type="password" placeholder="login password" />
+        </label>
+        <label>
+          <input name="remember_login" type="checkbox" />
+          Remember login
+        </label>
+        <button type="submit">Sign in to account</button>
+      </form>
+      <form id="signup-form" action="#signup">
+        <h2>Create Account Signup Form</h2>
+        <label>Full name
+          <input name="signup_name" type="text" placeholder="full name" />
+        </label>
+        <label>Email address
+          <input name="signup_email" type="email" placeholder="signup email" />
+        </label>
+        <label>Password
+          <input name="signup_password" type="password" placeholder="signup password" />
+        </label>
+        <button type="submit">Create account</button>
+      </form>
+    </main>
+    <section>
+      <h2>Result</h2>
+      <pre id="result">No submission yet.</pre>
+    </section>
+    <script>
+      for (const form of document.querySelectorAll('form')) {
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const data = Object.fromEntries(new FormData(form).entries());
+          document.querySelector('#result').textContent = JSON.stringify({
+            form: form.id,
+            data
+          }, null, 2);
+        });
+      }
+    </script>
+  </body>
+</html>

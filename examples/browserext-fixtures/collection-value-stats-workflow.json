@@ -1,0 +1,42 @@
+{
+  "timeoutMs": 15000,
+  "steps": [
+    {
+      "kind": "collection-export",
+      "name": "capture baseline",
+      "collection": "Search results",
+      "format": "json",
+      "saveAs": "baseline"
+    },
+    {
+      "kind": "collection-values-diff",
+      "name": "diff owner values",
+      "collection": "Search results",
+      "cell": "Owner",
+      "againstOutput": "baseline",
+      "saveAs": "ownerDiff"
+    },
+    {
+      "kind": "collection-stats-diff",
+      "name": "diff collection stats",
+      "collection": "Search results",
+      "againstOutput": "baseline",
+      "saveAs": "statsDiff"
+    },
+    {
+      "kind": "assert-collection-values-diff",
+      "name": "assert no removed owners",
+      "collection": "Search results",
+      "cell": "Owner",
+      "againstOutput": "baseline",
+      "countDeltaAtLeast": 0
+    },
+    {
+      "kind": "assert-collection-stats-diff",
+      "name": "assert stats baseline still valid",
+      "collection": "Search results",
+      "againstOutput": "baseline",
+      "countDeltaAtLeast": 0
+    }
+  ]
+}

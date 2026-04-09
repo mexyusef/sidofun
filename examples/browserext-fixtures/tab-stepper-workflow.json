@@ -1,0 +1,27 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "open security tab",
+      "kind": "tab",
+      "query": "Settings sections",
+      "value": "Security"
+    },
+    {
+      "name": "advance wizard",
+      "kind": "step",
+      "query": "Checkout wizard",
+      "direction": "next"
+    },
+    {
+      "name": "read next actions",
+      "kind": "next-actions",
+      "limit": 15
+    },
+    {
+      "name": "read page state",
+      "kind": "page-state",
+      "limit": 15
+    }
+  ]
+}

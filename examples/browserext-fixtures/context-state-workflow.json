@@ -1,0 +1,16 @@
+{
+  "contextQuery": "account login form",
+  "lockContext": true,
+  "steps": [
+    {
+      "kind": "context-state",
+      "name": "capture login context",
+      "limit": 10
+    },
+    {
+      "kind": "next-actions",
+      "name": "capture login next actions",
+      "limit": 10
+    }
+  ]
+}

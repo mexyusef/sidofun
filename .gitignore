@@ -1,0 +1,91 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+out/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Logs
+logs/
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Python cache/build outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+python/build/
+python/*.egg-info/
+python/**/__pycache__/
+python/tests/__pycache__/
+
+# Temporary folders
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+.apdisk
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Process monitor
+pm2.log
+
+# Bun specific
+.bun/
+
+/_legacy
+
+# Local scratch files
+file.txt
+
+# Python virtual environments
+.venv/
+venv/
+python/.venv/
+python/venv/
+
+# Python packaging / reports
+python/dist/
+python/.coverage
+python/htmlcov/
+
+# Playwright / test reports
+.playwright/
+playwright-report/
+test-results/
+
+# TypeScript incremental state
+*.tsbuildinfo
+
+# Generated screenshots and local captures
+python/sidofun_desktop/_backend/
+python/sidofun_desktop/_vendor/

@@ -1,0 +1,33 @@
+{
+  "steps": [
+    {
+      "kind": "cookie-set",
+      "targetUrl": "https://example.com",
+      "path": "/",
+      "sameSite": "lax",
+      "secure": false,
+      "httpOnly": false,
+      "name": "sid",
+      "value": "demo-cookie"
+    },
+    {
+      "kind": "wait-cookie",
+      "targetUrl": "https://example.com",
+      "name": "sid",
+      "equals": "demo-cookie",
+      "timeoutMs": 30000,
+      "intervalMs": 1000
+    },
+    {
+      "kind": "assert-cookie",
+      "targetUrl": "https://example.com",
+      "name": "sid",
+      "equals": "demo-cookie"
+    },
+    {
+      "kind": "cookie-remove",
+      "targetUrl": "https://example.com",
+      "name": "sid"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "timeoutMs": 30000,
+    "intervalMs": 1000
+  },
+  "steps": [
+    {
+      "name": "inspect blockers",
+      "kind": "page-blockers",
+      "saveAs": "blockers"
+    },
+    {
+      "name": "wait until blockers clear",
+      "kind": "wait-no-blockers"
+    },
+    {
+      "name": "assert blockers cleared",
+      "kind": "assert-no-blockers"
+    }
+  ]
+}

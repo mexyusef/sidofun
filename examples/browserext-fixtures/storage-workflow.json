@@ -1,0 +1,31 @@
+{
+  "steps": [
+    {
+      "kind": "storage-set",
+      "name": "store auth token",
+      "scope": "local",
+      "key": "auth_token",
+      "value": "secret-demo"
+    },
+    {
+      "kind": "storage-get",
+      "name": "read auth token",
+      "scope": "local",
+      "key": "auth_token",
+      "saveAs": "storedToken"
+    },
+    {
+      "kind": "assert-storage",
+      "name": "assert auth token",
+      "scope": "local",
+      "key": "auth_token",
+      "equals": "secret-demo"
+    },
+    {
+      "kind": "storage-remove",
+      "name": "clear auth token",
+      "scope": "local",
+      "key": "auth_token"
+    }
+  ]
+}

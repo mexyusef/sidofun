@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "timeoutMs": 30000,
+    "intervalMs": 1000
+  },
+  "steps": [
+    {
+      "name": "wait exported report",
+      "kind": "wait-download",
+      "query": "report",
+      "state": "complete",
+      "saveAs": "reportDownload"
+    },
+    {
+      "name": "assert report exists",
+      "kind": "assert-download",
+      "query": "report",
+      "state": "complete"
+    }
+  ]
+}

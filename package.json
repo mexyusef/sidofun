@@ -1,0 +1,88 @@
+{
+  "name": "@mexyusef/sidofun-engine",
+  "version": "0.1.0",
+  "description": "Windows-first Bun automation engine for Sidofun",
+  "main": "dist/index.js",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "bin": {
+    "sidofun": "./dist/operator-cli.js",
+    "sidofun-daemon": "./dist/operator-daemon.js",
+    "sidofun-server": "./dist/index.js",
+    "sidofun-mcp": "./dist/mcp-stdio.js"
+  },
+  "files": [
+    "dist/**",
+    "providers/browser-extension/**",
+    "LICENSE",
+    "README.md",
+    "package.json",
+    "libnut-core-build-release/**"
+  ],
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun run typecheck && bun build src/index.ts --outdir ./dist --target bun --external playwright-core",
+    "build:ipc": "bun run typecheck && bun build src/cli-ipc.ts --outdir ./dist --target bun --external playwright-core",
+    "build:operator-cli": "bun run typecheck && bun build src/operator-cli.tsx --outdir ./dist --target bun --external playwright-core",
+    "build:operator-daemon": "bun run typecheck && bun build src/operator-daemon.ts --outdir ./dist --target bun --external playwright-core",
+    "build:mcp": "bun run typecheck && bun build src/mcp-stdio.ts --outdir ./dist --target bun --external playwright-core",
+    "build:browserext": "bun build providers/browser-extension/src/background.ts --outdir ./providers/browser-extension/dist --target browser && bun build providers/browser-extension/src/content-script.ts --outdir ./providers/browser-extension/dist --target browser && bun build providers/browser-extension/src/dom-bridge.ts --outdir ./providers/browser-extension/dist --target browser",
+    "build:release": "bun run build && bun run build:ipc && bun run build:operator-cli && bun run build:operator-daemon && bun run build:mcp && bun run build:browserext",
+    "stage:python-backend": "python python/build_backend_bundle.py",
+    "typecheck": "bunx tsc -p tsconfig.json --noEmit",
+    "start": "bun run dist/index.js",
+    "cli": "bun run src/operator-cli.tsx",
+    "tui": "bun run src/operator-cli.tsx tui",
+    "daemon": "bun run src/operator-daemon.ts",
+    "mcp": "bun run src/mcp-stdio.ts",
+    "test": "powershell -ExecutionPolicy Bypass -File ./scripts/run-bun-tests.ps1",
+    "test:python": "powershell -ExecutionPolicy Bypass -File ./scripts/run-python-tests.ps1",
+    "smoke:http": "bun run examples/http-smoke.ts",
+    "smoke:ipc": "bun run examples/ipc-smoke.ts",
+    "smoke:mcp": "bun run examples/mcp-smoke.ts",
+    "smoke:browserext": "bun run examples/browserext-smoke.ts",
+    "repl": "bun run tests/manual/websocket-repl-client.ts",
+    "repl:debug": "DEBUG=1 bun run tests/manual/websocket-repl-client.ts",
+    "prepack": "bun run build:release"
+  },
+  "dependencies": {
+    "hono": "^4.10.6",
+    "ink": "^5.2.1",
+    "playwright-core": "^1.58.2",
+    "react": "^18.3.1",
+    "react-devtools-core": "^6.1.5",
+    "sharp": "^0.34.2",
+    "ws": "^8.18.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/ws": "^8.5.13",
+    "bun-types": "latest"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "keywords": [
+    "sidofun",
+    "automation",
+    "windows",
+    "bun",
+    "desktop"
+  ],
+  "author": "Yusef Ulum",
+  "license": "MIT",
+  "homepage": "https://github.com/mexyusef/sidofun",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mexyusef/sidofun.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mexyusef/sidofun/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "steps": [
+    {
+      "name": "advance until ready",
+      "kind": "repeat-until",
+      "maxAttempts": 5,
+      "delayMs": 100,
+      "condition": {
+        "textIncludes": "Ready"
+      },
+      "steps": [
+        {
+          "name": "click advance",
+          "kind": "click",
+          "query": "Advance state"
+        },
+        {
+          "name": "wait page settle",
+          "kind": "settle",
+          "mode": "page",
+          "quietMs": 150,
+          "stableReads": 2
+        }
+      ]
+    }
+  ]
+}

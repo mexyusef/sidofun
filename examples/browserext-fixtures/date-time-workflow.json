@@ -1,0 +1,33 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "set start date",
+      "kind": "date",
+      "query": "Start date",
+      "value": "2026-04-10"
+    },
+    {
+      "name": "set start time",
+      "kind": "time",
+      "query": "Start time",
+      "value": "09:30"
+    },
+    {
+      "name": "set reminder datetime",
+      "kind": "datetime",
+      "query": "Reminder datetime",
+      "value": "2026-04-10T08:45"
+    },
+    {
+      "name": "save schedule",
+      "kind": "click",
+      "query": "Save schedule"
+    },
+    {
+      "name": "verify result output",
+      "kind": "wait-text",
+      "text": "\"startDate\": \"2026-04-10\""
+    }
+  ]
+}

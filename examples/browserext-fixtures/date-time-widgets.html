@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Date And Time Widgets</title>
+  <style>
+    body { font-family: Georgia, serif; margin: 2rem; }
+    form { display: grid; gap: 1rem; max-width: 28rem; }
+    label { display: grid; gap: 0.35rem; }
+    output { display: block; margin-top: 1rem; white-space: pre-wrap; border: 1px solid #ccc; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Date and Time Widgets</h1>
+    <form id="schedule-form">
+      <label>
+        Start date
+        <input name="startDate" type="date" />
+      </label>
+      <label>
+        Start time
+        <input name="startTime" type="time" />
+      </label>
+      <label>
+        Reminder datetime
+        <input name="reminderAt" type="datetime-local" />
+      </label>
+      <button type="button" id="save-schedule">Save schedule</button>
+    </form>
+    <output id="schedule-result">No data yet.</output>
+  </main>
+  <script>
+    const form = document.getElementById('schedule-form');
+    const output = document.getElementById('schedule-result');
+    document.getElementById('save-schedule').addEventListener('click', () => {
+      const data = new FormData(form);
+      output.textContent = JSON.stringify({
+        startDate: data.get('startDate'),
+        startTime: data.get('startTime'),
+        reminderAt: data.get('reminderAt')
+      }, null, 2);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Browserext Frames And Editors Fixture</title>
+  <style>
+    body { font-family: sans-serif; margin: 24px; }
+    .editor, .ProseMirror, .ql-editor, .cm-content {
+      border: 1px solid #999;
+      min-height: 80px;
+      padding: 8px;
+      margin-bottom: 16px;
+    }
+    iframe { width: 100%; height: 260px; border: 1px solid #333; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Browserext Frames And Editors Fixture</h1>
+  <textarea id="plain-editor" aria-label="Plain editor"></textarea>
+  <div id="contenteditable-editor" class="editor" contenteditable="true" role="textbox" aria-label="Contenteditable editor"></div>
+  <div class="ProseMirror" id="prosemirror-editor" contenteditable="true" aria-label="ProseMirror editor"><p></p></div>
+  <iframe
+    name="embedded-workflow"
+    title="Embedded workflow"
+    srcdoc='
+      <!doctype html>
+      <html>
+      <body>
+        <form id="embedded-form" action="/embedded-submit" method="post">
+          <label>Email <input type="email" name="email" placeholder="user@example.com"></label>
+          <label>Notes <textarea name="notes"></textarea></label>
+          <button type="submit">Submit embedded form</button>
+        </form>
+        <div class="ql-editor" id="iframe-editor" contenteditable="true" role="textbox" aria-label="Iframe editor"></div>
+      </body>
+      </html>'></iframe>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "contextQuery": "frame account login form",
+  "frameQuery": "auth login frame",
+  "lockContext": true,
+  "steps": [
+    {
+      "kind": "context-state",
+      "name": "capture locked frame context",
+      "limit": 10
+    },
+    {
+      "kind": "fill",
+      "name": "fill email in locked frame",
+      "query": "Email address",
+      "value": "usef@example.com"
+    },
+    {
+      "kind": "fill",
+      "name": "fill password in locked frame",
+      "query": "Password",
+      "value": "secret123"
+    },
+    {
+      "kind": "submit",
+      "name": "submit locked login frame"
+    }
+  ]
+}

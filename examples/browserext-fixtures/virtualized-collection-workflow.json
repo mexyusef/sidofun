@@ -1,0 +1,156 @@
+{
+  "timeoutMs": 15000,
+  "settleAfterEach": "page",
+  "settleQuietMs": 1000,
+  "steps": [
+    {
+      "kind": "wait-collection-count",
+      "name": "wait for initial rows",
+      "collection": "Search results",
+      "count": 5,
+      "limit": 20
+    },
+    {
+      "kind": "collection-harvest",
+      "name": "harvest rows",
+      "collection": "Search results",
+      "strategy": "scroll",
+      "dedupeBy": "cells",
+      "scrollAmount": 0.75,
+      "maxIterations": 5,
+      "stableIterations": 2,
+      "saveAs": "harvest"
+    },
+    {
+      "kind": "assert-output-path",
+      "name": "rows harvested",
+      "output": "harvest",
+      "path": "count",
+      "exists": true
+    },
+    {
+      "kind": "collection-row-actions",
+      "name": "inspect row actions",
+      "collection": "Search results",
+      "row": "Result 02",
+      "saveAs": "rowActions"
+    },
+    {
+      "kind": "collection-select-all",
+      "name": "select all rows",
+      "collection": "Search results",
+      "desiredState": "on"
+    },
+    {
+      "kind": "collection-selection-state",
+      "name": "selection state",
+      "collection": "Search results",
+      "saveAs": "selectionState"
+    },
+    {
+      "kind": "collection-cell",
+      "name": "capture owner cell",
+      "collection": "Search results",
+      "row": "Result 02",
+      "cell": "Owner",
+      "saveAs": "ownerCell"
+    },
+    {
+      "kind": "collection-find",
+      "name": "find rows by owner domain",
+      "collection": "Search results",
+      "cell": "Owner",
+      "query": "@example.com",
+      "saveAs": "ownerMatches"
+    },
+    {
+      "kind": "collection-values",
+      "name": "capture owner values",
+      "collection": "Search results",
+      "cell": "Owner",
+      "saveAs": "ownerValues"
+    },
+    {
+      "kind": "collection-stats",
+      "name": "capture collection stats",
+      "collection": "Search results",
+      "cell": "Status",
+      "saveAs": "collectionStats"
+    },
+    {
+      "kind": "assert-collection-cell",
+      "name": "assert owner cell text",
+      "collection": "Search results",
+      "row": "Result 02",
+      "cell": "Owner",
+      "includes": "@example.com"
+    },
+    {
+      "kind": "assert-collection-selection",
+      "name": "assert at least one selected row",
+      "collection": "Search results",
+      "atLeast": 1
+    },
+    {
+      "kind": "collection-row-expand",
+      "name": "expand result row",
+      "collection": "Search results",
+      "row": "Result 02",
+      "desiredState": "open"
+    },
+    {
+      "kind": "collection-row-details",
+      "name": "read row details",
+      "collection": "Search results",
+      "row": "Result 02",
+      "saveAs": "rowDetails"
+    },
+    {
+      "kind": "assert-collection-detail",
+      "name": "assert row detail contains email",
+      "collection": "Search results",
+      "row": "Result 02",
+      "includes": "@example.com"
+    },
+    {
+      "kind": "collection-bulk-action",
+      "name": "open a few rows",
+      "collection": "Search results",
+      "rows": ["Result 01", "Result 03"],
+      "action": "Open",
+      "continueOnError": true,
+      "saveAs": "bulkOpen"
+    },
+    {
+      "kind": "collection-export",
+      "name": "export collection snapshot",
+      "collection": "Search results",
+      "includeSelection": true,
+      "includeDetails": true,
+      "format": "json",
+      "saveAs": "collectionExport"
+    },
+    {
+      "kind": "collection-diff",
+      "name": "diff collection against exported snapshot",
+      "collection": "Search results",
+      "againstOutput": "collectionExport",
+      "dedupeBy": "cells",
+      "includeSelection": true,
+      "includeDetails": true,
+      "saveAs": "collectionDiff"
+    },
+    {
+      "kind": "collection-row-click",
+      "name": "open result row",
+      "collection": "Search results",
+      "row": "Result 02",
+      "action": "Open"
+    },
+    {
+      "kind": "wait-text",
+      "name": "wait row action result",
+      "text": "\"action\": \"open\""
+    }
+  ]
+}

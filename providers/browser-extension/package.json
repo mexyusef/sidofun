@@ -1,0 +1,10 @@
+{
+  "name": "@mexyusef/sidofun-browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/background.ts --outdir ./dist --target browser && bun build src/content-script.ts --outdir ./dist --target browser",
+    "typecheck": "echo sidofun browser extension uses root TypeScript validation plus browser-target Bun builds"
+  }
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tablist And Stepper Fixture</title>
+  <style>
+    body { font-family: Georgia, serif; margin: 2rem; }
+    [role="tablist"] { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    [role="tab"] { padding: 0.5rem 1rem; border: 1px solid #888; background: #f3f3f3; cursor: pointer; }
+    [role="tab"][aria-selected="true"] { background: #222; color: #fff; }
+    [data-panel] { display: none; padding: 1rem; border: 1px solid #ccc; }
+    [data-panel].active { display: block; }
+    .wizard { margin-top: 2rem; padding: 1rem; border: 1px solid #aaa; }
+    .wizard-step { display: none; }
+    .wizard-step.active { display: block; }
+    .actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Tablist and Stepper Controls</h1>
+    <div role="tablist" aria-label="Settings sections">
+      <button role="tab" aria-selected="true" aria-controls="panel-profile" data-tab="profile">Profile</button>
+      <button role="tab" aria-selected="false" aria-controls="panel-security" data-tab="security">Security</button>
+      <button role="tab" aria-selected="false" aria-controls="panel-billing" data-tab="billing">Billing</button>
+    </div>
+
+    <section id="panel-profile" data-panel class="active">Profile panel</section>
+    <section id="panel-security" data-panel>Security panel</section>
+    <section id="panel-billing" data-panel>Billing panel</section>
+
+    <div class="wizard" data-stepper aria-label="Checkout wizard">
+      <h2>Checkout Wizard</h2>
+      <div class="wizard-step active" data-step="1">Step 1: Cart</div>
+      <div class="wizard-step" data-step="2">Step 2: Address</div>
+      <div class="wizard-step" data-step="3">Step 3: Confirm</div>
+      <div class="actions">
+        <button type="button" data-prev disabled>Back</button>
+        <button type="button" data-next>Next</button>
+      </div>
+    </div>
+  </main>
+  <script>
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[data-panel]'));
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((candidate) => candidate.setAttribute('aria-selected', String(candidate === tab)));
+        panels.forEach((panel) => panel.classList.toggle('active', panel.id === tab.getAttribute('aria-controls')));
+      });
+    });
+
+    const steps = Array.from(document.querySelectorAll('.wizard-step'));
+    const prev = document.querySelector('[data-prev]');
+    const next = document.querySelector('[data-next]');
+    let activeIndex = 0;
+    const render = () => {
+      steps.forEach((step, index) => step.classList.toggle('active', index === activeIndex));
+      prev.disabled = activeIndex === 0;
+      next.textContent = activeIndex === steps.length - 1 ? 'Finish' : 'Next';
+    };
+    prev.addEventListener('click', () => {
+      activeIndex = Math.max(0, activeIndex - 1);
+      render();
+    });
+    next.addEventListener('click', () => {
+      activeIndex = Math.min(steps.length - 1, activeIndex + 1);
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pagination Table Widgets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Segoe UI, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+    th, td { border: 1px solid #bbb; padding: 8px; text-align: left; }
+    nav.pagination { display: flex; gap: 8px; margin-top: 16px; }
+    .status { margin-top: 18px; padding: 12px; background: #f5f5f5; border-radius: 8px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Pagination Table Widgets</h1>
+  <button id="load-more">Load more results</button>
+  <table aria-label="Search results table">
+    <thead>
+      <tr><th>Name</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody id="results-body">
+      <tr><td>Alpha</td><td>Open</td><td><button data-row="Alpha">Open Alpha</button></td></tr>
+      <tr><td>Beta</td><td>Queued</td><td><button data-row="Beta">Open Beta</button></td></tr>
+    </tbody>
+  </table>
+  <nav class="pagination" aria-label="Results pagination">
+    <button id="prev-page">Previous</button>
+    <button id="page-1" aria-current="page">1</button>
+    <button id="page-2">2</button>
+    <button id="next-page">Next</button>
+  </nav>
+  <div id="status" class="status">status: idle</div>
+  <script>
+    const status = document.getElementById('status');
+    const tbody = document.getElementById('results-body');
+    const setStatus = (payload) => { status.textContent = JSON.stringify(payload, null, 2); };
+    document.querySelectorAll('[data-row]').forEach((button) => {
+      button.addEventListener('click', () => setStatus({ row: button.dataset.row }));
+    });
+    document.getElementById('next-page').addEventListener('click', () => setStatus({ page: 'next' }));
+    document.getElementById('prev-page').addEventListener('click', () => setStatus({ page: 'previous' }));
+    document.getElementById('page-2').addEventListener('click', () => setStatus({ page: '2' }));
+    document.getElementById('load-more').addEventListener('click', () => {
+      const row = document.createElement('tr');
+      row.innerHTML = '<td>Gamma</td><td>Loaded</td><td><button data-row="Gamma">Open Gamma</button></td>';
+      tbody.appendChild(row);
+      row.querySelector('button').addEventListener('click', () => setStatus({ row: 'Gamma' }));
+      setStatus({ loadMore: true, rows: tbody.querySelectorAll('tr').length });
+    });
+  </script>
+</body>
+</html>

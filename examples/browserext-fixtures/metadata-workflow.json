@@ -1,0 +1,33 @@
+{
+  "steps": [
+    {
+      "kind": "metadata",
+      "name": "read page metadata",
+      "saveAs": "pageMetadata"
+    },
+    {
+      "kind": "url-parts",
+      "name": "read url parts",
+      "saveAs": "urlParts"
+    },
+    {
+      "kind": "assert-metadata",
+      "name": "assert metadata title exists",
+      "key": "title",
+      "exists": true
+    },
+    {
+      "kind": "assert-url-part",
+      "name": "assert pathname exists",
+      "part": "pathname",
+      "exists": true
+    },
+    {
+      "kind": "assert-output-path",
+      "name": "assert metadata has metas",
+      "output": "pageMetadata",
+      "path": "metas",
+      "exists": true
+    }
+  ]
+}

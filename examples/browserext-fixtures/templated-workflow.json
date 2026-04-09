@@ -1,0 +1,43 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "capture current url",
+      "kind": "capture-url",
+      "saveAs": "pageUrl"
+    },
+    {
+      "name": "capture page text",
+      "kind": "capture-text",
+      "maxChars": 400,
+      "saveAs": "pageText"
+    },
+    {
+      "name": "assert templated page text",
+      "kind": "assert-output",
+      "output": "pageText",
+      "includes": "login"
+    },
+    {
+      "name": "branch on templated page text",
+      "kind": "branch",
+      "condition": {
+        "textIncludes": "{{pageText}}"
+      },
+      "then": [
+        {
+          "name": "inspect main area",
+          "kind": "inspect",
+          "selector": "main"
+        }
+      ],
+      "else": [
+        {
+          "name": "inspect document body",
+          "kind": "inspect",
+          "selector": "body"
+        }
+      ]
+    }
+  ]
+}

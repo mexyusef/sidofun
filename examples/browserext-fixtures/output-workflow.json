@@ -1,0 +1,34 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "capture current url",
+      "kind": "capture-url",
+      "saveAs": "pageUrl"
+    },
+    {
+      "name": "capture page text",
+      "kind": "capture-text",
+      "maxChars": 400,
+      "saveAs": "pageText"
+    },
+    {
+      "name": "assert page text includes login",
+      "kind": "assert-output",
+      "output": "pageText",
+      "includes": "login"
+    },
+    {
+      "name": "capture login field",
+      "kind": "capture-field",
+      "query": "email",
+      "saveAs": "emailField"
+    },
+    {
+      "name": "assert email field exists",
+      "kind": "assert-output",
+      "output": "emailField",
+      "exists": true
+    }
+  ]
+}

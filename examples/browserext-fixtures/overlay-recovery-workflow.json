@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "timeoutMs": 30000,
+    "intervalMs": 1000
+  },
+  "steps": [
+    {
+      "name": "wait for blocking dialog",
+      "kind": "wait-dialog",
+      "query": "cookie"
+    },
+    {
+      "name": "assert accept action exists",
+      "kind": "assert-dialog-action",
+      "dialog": "cookie",
+      "action": "accept"
+    },
+    {
+      "name": "click accept",
+      "kind": "dialog-action",
+      "dialog": "cookie",
+      "action": "accept"
+    },
+    {
+      "name": "wait dialog gone",
+      "kind": "wait-no-dialog",
+      "query": "cookie"
+    },
+    {
+      "name": "recover page",
+      "kind": "page-ready"
+    },
+    {
+      "name": "assert page ready",
+      "kind": "assert-page-ready"
+    }
+  ]
+}

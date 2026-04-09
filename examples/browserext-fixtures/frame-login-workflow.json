@@ -1,0 +1,28 @@
+{
+  "contextQuery": "frame account login form",
+  "frameQuery": "auth login frame",
+  "steps": [
+    {
+      "name": "fill frame login email",
+      "kind": "fill",
+      "query": "Email address",
+      "value": "frame@example.com"
+    },
+    {
+      "name": "fill frame login password",
+      "kind": "fill",
+      "query": "Password",
+      "value": "secret123"
+    },
+    {
+      "name": "submit frame login",
+      "kind": "submit-query",
+      "query": "Sign in to frame account"
+    },
+    {
+      "name": "verify frame login result",
+      "kind": "require-text",
+      "text": "\"form\": \"frame-login-form\""
+    }
+  ]
+}

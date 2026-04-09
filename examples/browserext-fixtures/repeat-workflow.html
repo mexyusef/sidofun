@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Repeat Workflow Fixture</title>
+    <style>
+      body { font-family: sans-serif; margin: 24px; }
+      button { padding: 8px 12px; }
+      #status { margin-top: 16px; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Repeat Workflow Fixture</h1>
+    <p>Each click advances state. Browserext repeat-until should stop once Ready appears.</p>
+    <button id="advance">Advance state</button>
+    <div id="status">Step 0</div>
+    <script>
+      let step = 0;
+      const status = document.querySelector('#status');
+      document.querySelector('#advance').addEventListener('click', () => {
+        step += 1;
+        status.textContent = step >= 3 ? 'Ready' : `Step ${step}`;
+      });
+    </script>
+  </body>
+</html>

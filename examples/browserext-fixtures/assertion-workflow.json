@@ -1,0 +1,43 @@
+{
+  "contextQuery": "account login form",
+  "lockContext": true,
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "inspect current form context",
+      "kind": "context-state",
+      "limit": 20
+    },
+    {
+      "name": "require email field",
+      "kind": "require-field",
+      "query": "email"
+    },
+    {
+      "name": "require sign in action",
+      "kind": "require-next-action",
+      "query": "sign in"
+    },
+    {
+      "name": "branch on password field",
+      "kind": "branch",
+      "condition": {
+        "fieldExists": "password"
+      },
+      "then": [
+        {
+          "name": "record next actions",
+          "kind": "next-actions",
+          "limit": 10
+        }
+      ],
+      "else": [
+        {
+          "name": "record page state fallback",
+          "kind": "page-state",
+          "limit": 10
+        }
+      ]
+    }
+  ]
+}

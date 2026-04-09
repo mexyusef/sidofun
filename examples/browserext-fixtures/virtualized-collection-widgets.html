@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtualized Collection Widgets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+    }
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .viewport {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      height: 320px;
+      overflow: auto;
+      position: relative;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      background: #fff;
+    }
+    th button, td button {
+      margin-right: 8px;
+    }
+    .sticky-head th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 1;
+    }
+    .result {
+      margin-top: 16px;
+      padding: 12px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      min-height: 72px;
+    }
+    .load-more {
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Virtualized Collection Widgets</h1>
+    <p>This fixture simulates a scroll-driven virtualized table with per-row actions.</p>
+
+    <section aria-label="Results workspace">
+      <div class="toolbar">
+        <label>
+          Search
+          <input id="search-input" type="search" placeholder="Filter rows" aria-label="Search rows" />
+        </label>
+        <label>
+          Sort
+          <select id="sort-select" aria-label="Sort rows">
+            <option value="name">Name</option>
+            <option value="status">Status</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="viewport" id="result-viewport" aria-label="Virtualized search results">
+        <table aria-label="Search results">
+          <thead class="sticky-head">
+            <tr>
+              <th><label><input id="select-all" type="checkbox" aria-label="Select all results" /> Select</label></th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+
+      <button id="load-more" class="load-more" type="button">Load more results</button>
+      <div id="result" class="result" aria-label="Result output">No action yet.</div>
+    </section>
+  </main>
+
+  <script>
+    const dataset = Array.from({ length: 40 }, (_, index) => ({
+      id: index + 1,
+      name: `Result ${String(index + 1).padStart(2, '0')}`,
+      status: index % 2 === 0 ? 'active' : 'queued'
+    }));
+
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+    const viewport = document.getElementById('result-viewport');
+    const body = document.getElementById('result-body');
+    const result = document.getElementById('result');
+    const loadMoreButton = document.getElementById('load-more');
+    const selectAll = document.getElementById('select-all');
+
+    let visibleLimit = 12;
+    const selectedIds = new Set();
+    const expandedIds = new Set();
+
+    function filteredRows() {
+      const query = searchInput.value.trim().toLowerCase();
+      const sorted = [...dataset].sort((left, right) => {
+        const key = sortSelect.value === 'status' ? 'status' : 'name';
+        return String(left[key]).localeCompare(String(right[key]));
+      });
+      return sorted.filter((row) => {
+        if (!query) return true;
+        return row.name.toLowerCase().includes(query) || row.status.toLowerCase().includes(query);
+      });
+    }
+
+    function currentWindow(rows) {
+      const start = Math.max(0, Math.floor(viewport.scrollTop / 38));
+      const end = Math.min(rows.length, start + visibleLimit);
+      return rows.slice(start, end);
+    }
+
+    function render() {
+      const rows = filteredRows();
+      const visible = currentWindow(rows);
+      body.innerHTML = '';
+      for (const row of visible) {
+        const tr = document.createElement('tr');
+        tr.dataset.rowId = String(row.id);
+        tr.innerHTML = `
+          <td><input type="checkbox" aria-label="Select ${row.name}" ${selectedIds.has(row.id) ? 'checked' : ''} /></td>
+          <td>${row.name}</td>
+          <td>${row.status}</td>
+          <td>
+            <button type="button" data-action="details" aria-expanded="${expandedIds.has(row.id) ? 'true' : 'false'}">Details</button>
+            <button type="button" data-action="open">Open</button>
+            <button type="button" data-action="archive">Archive</button>
+          </td>
+        `;
+        body.appendChild(tr);
+        if (expandedIds.has(row.id)) {
+          const detailsRow = document.createElement('tr');
+          detailsRow.dataset.rowId = `${row.id}-details`;
+          detailsRow.innerHTML = `
+            <td></td>
+            <td colspan="3">
+              <div data-row-details="true">Detail for ${row.name}: status ${row.status}, row id ${row.id}</div>
+            </td>
+          `;
+          body.appendChild(detailsRow);
+        }
+      }
+      selectAll.checked = rows.length > 0 && rows.every((row) => selectedIds.has(row.id));
+      loadMoreButton.disabled = visibleLimit >= rows.length;
+    }
+
+    function setResult(payload) {
+      result.textContent = JSON.stringify(payload, null, 2);
+    }
+
+    body.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const button = target.closest('button[data-action]');
+      const row = target.closest('tr[data-row-id]');
+      const checkbox = target.closest('input[type="checkbox"]');
+      if (checkbox instanceof HTMLInputElement && row instanceof HTMLTableRowElement && row.dataset.rowId && !row.dataset.rowId.endsWith('-details')) {
+        const rowData = dataset.find((entry) => String(entry.id) === row.dataset.rowId);
+        if (!rowData) return;
+        if (checkbox.checked) {
+          selectedIds.add(rowData.id);
+        } else {
+          selectedIds.delete(rowData.id);
+        }
+        render();
+        return;
+      }
+      if (!(button instanceof HTMLButtonElement) || !(row instanceof HTMLTableRowElement) || !row.dataset.rowId || row.dataset.rowId.endsWith('-details')) return;
+      const rowData = dataset.find((entry) => String(entry.id) === row.dataset.rowId);
+      if (!rowData) return;
+      if (button.dataset.action === 'details') {
+        if (expandedIds.has(rowData.id)) {
+          expandedIds.delete(rowData.id);
+        } else {
+          expandedIds.add(rowData.id);
+        }
+        render();
+        return;
+      }
+      setResult({
+        rowId: rowData.id,
+        name: rowData.name,
+        status: rowData.status,
+        action: button.dataset.action
+      });
+    });
+
+    selectAll.addEventListener('change', () => {
+      const rows = filteredRows();
+      if (selectAll.checked) {
+        rows.forEach((row) => selectedIds.add(row.id));
+      } else {
+        rows.forEach((row) => selectedIds.delete(row.id));
+      }
+      render();
+    });
+
+    searchInput.addEventListener('input', () => {
+      viewport.scrollTop = 0;
+      render();
+    });
+    sortSelect.addEventListener('change', () => {
+      viewport.scrollTop = 0;
+      render();
+    });
+    viewport.addEventListener('scroll', () => render());
+    loadMoreButton.addEventListener('click', () => {
+      visibleLimit = Math.min(filteredRows().length, visibleLimit + 8);
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

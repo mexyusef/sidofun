@@ -1,0 +1,62 @@
+{
+  "timeoutMs": 15000,
+  "intervalMs": 500,
+  "steps": [
+    {
+      "kind": "collection-export",
+      "name": "capture baseline",
+      "collection": "Search results",
+      "includeSelection": true,
+      "includeDetails": true,
+      "format": "json",
+      "saveAs": "baseline"
+    },
+    {
+      "kind": "load-more",
+      "name": "request more rows",
+      "query": "Load more"
+    },
+    {
+      "kind": "wait-collection-diff",
+      "name": "wait for more rows",
+      "collection": "Search results",
+      "againstOutput": "baseline",
+      "dedupeBy": "cells",
+      "addedAtLeast": 1
+    },
+    {
+      "kind": "collection-diff",
+      "name": "capture mutation diff",
+      "collection": "Search results",
+      "againstOutput": "baseline",
+      "dedupeBy": "cells",
+      "saveAs": "diff"
+    },
+    {
+      "kind": "assert-collection-diff",
+      "name": "assert rows added",
+      "collection": "Search results",
+      "againstOutput": "baseline",
+      "dedupeBy": "cells",
+      "addedAtLeast": 1
+    },
+    {
+      "kind": "branch",
+      "name": "react to added rows",
+      "condition": {
+        "collectionDiff": {
+          "against": "baseline",
+          "collection": "Search results",
+          "addedAtLeast": 1
+        }
+      },
+      "then": [
+        {
+          "kind": "capture-text",
+          "name": "mutation acknowledged",
+          "saveAs": "mutationNote"
+        }
+      ]
+    }
+  ]
+}

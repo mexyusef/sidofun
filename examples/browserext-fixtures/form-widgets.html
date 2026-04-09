@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sidofun Browserext Form Widgets Fixture</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 24px;
+        line-height: 1.4;
+      }
+      form {
+        display: grid;
+        gap: 12px;
+        max-width: 560px;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+      }
+      .combobox-shell {
+        position: relative;
+      }
+      #country-options {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        border: 1px solid #999;
+        background: #fff;
+        padding: 4px 0;
+        margin: 0;
+        list-style: none;
+        max-height: 180px;
+        overflow: auto;
+      }
+      #country-options[hidden] {
+        display: none;
+      }
+      #country-options li {
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+      #country-options li[aria-selected="true"] {
+        background: #dbeafe;
+      }
+      #result {
+        margin-top: 24px;
+        white-space: pre-wrap;
+        border: 1px solid #ddd;
+        padding: 12px;
+        background: #fafafa;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Browserext Form Widgets Fixture</h1>
+    <p>This page is used to validate file upload and combobox flows.</p>
+
+    <form id="demo-form">
+      <label>
+        Resume upload
+        <input id="resume-file" name="resume" type="file" />
+      </label>
+
+      <label>
+        Country combobox
+        <div class="combobox-shell">
+          <input
+            id="country-combobox"
+            name="country"
+            type="text"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="country-options"
+            aria-autocomplete="list"
+            autocomplete="off"
+            placeholder="Type a country"
+          />
+          <ul id="country-options" role="listbox" hidden>
+            <li role="option" data-value="id">Indonesia</li>
+            <li role="option" data-value="jp">Japan</li>
+            <li role="option" data-value="sg">Singapore</li>
+            <li role="option" data-value="th">Thailand</li>
+          </ul>
+        </div>
+      </label>
+
+      <button id="submit-button" type="submit">Submit fixture form</button>
+    </form>
+
+    <div id="result">No submission yet.</div>
+
+    <script>
+      const combobox = document.getElementById('country-combobox');
+      const options = document.getElementById('country-options');
+      const optionItems = Array.from(options.querySelectorAll('[role="option"]'));
+      let selectedValue = '';
+
+      const updateVisibility = (visible) => {
+        options.hidden = !visible;
+        combobox.setAttribute('aria-expanded', visible ? 'true' : 'false');
+      };
+
+      const selectOption = (option) => {
+        selectedValue = option.getAttribute('data-value') || option.textContent.trim();
+        combobox.value = option.textContent.trim();
+        optionItems.forEach((item) => item.setAttribute('aria-selected', item === option ? 'true' : 'false'));
+        updateVisibility(false);
+      };
+
+      combobox.addEventListener('focus', () => updateVisibility(true));
+      combobox.addEventListener('input', () => {
+        updateVisibility(true);
+        const needle = combobox.value.trim().toLowerCase();
+        optionItems.forEach((item) => {
+          const text = item.textContent.trim().toLowerCase();
+          item.hidden = needle.length > 0 && !text.includes(needle);
+        });
+      });
+      combobox.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          updateVisibility(false);
+        }
+      });
+      optionItems.forEach((item) => {
+        item.addEventListener('click', () => selectOption(item));
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!options.contains(event.target) && event.target !== combobox) {
+          updateVisibility(false);
+        }
+      });
+
+      document.getElementById('demo-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const fileInput = document.getElementById('resume-file');
+        const file = fileInput.files && fileInput.files[0];
+        const result = {
+          filename: file ? file.name : null,
+          fileSize: file ? file.size : null,
+          fileType: file ? file.type : null,
+          countryText: combobox.value,
+          countryValue: selectedValue
+        };
+        document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+      });
+    </script>
+  </body>
+</html>

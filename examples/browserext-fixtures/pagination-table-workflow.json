@@ -1,0 +1,63 @@
+{
+  "steps": [
+    {
+      "name": "rows before",
+      "kind": "collection-rows",
+      "collection": "Search results table",
+      "saveAs": "rowsBefore"
+    },
+    {
+      "name": "load more exists",
+      "kind": "branch",
+      "condition": {
+        "loadMoreExists": "Load more results"
+      },
+      "then": [
+        {
+          "kind": "load-more",
+          "query": "Load more results"
+        }
+      ]
+    },
+    {
+      "name": "rows after",
+      "kind": "collection-rows",
+      "collection": "Search results table",
+      "saveAs": "rowsAfter"
+    },
+    {
+      "name": "pagination visible",
+      "kind": "branch",
+      "condition": {
+        "paginationExists": "Results pagination"
+      },
+      "then": [
+        {
+          "kind": "pagination-click",
+          "query": "Next"
+        }
+      ]
+    },
+    {
+      "name": "pick gamma row",
+      "kind": "branch",
+      "condition": {
+        "collectionItemExists": {
+          "collection": "Search results table",
+          "item": "Gamma"
+        }
+      },
+      "then": [
+        {
+          "kind": "collection-click",
+          "collection": "Search results table",
+          "item": "Gamma"
+        }
+      ]
+    },
+    {
+      "name": "final snapshot",
+      "kind": "snapshot"
+    }
+  ]
+}

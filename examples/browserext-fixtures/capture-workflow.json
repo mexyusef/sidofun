@@ -1,0 +1,31 @@
+{
+  "timeoutMs": 20000,
+  "steps": [
+    {
+      "name": "capture snapshot",
+      "kind": "snapshot"
+    },
+    {
+      "name": "capture dom tree",
+      "kind": "dom-tree",
+      "maxDepth": 4,
+      "maxChildren": 12
+    },
+    {
+      "name": "inspect page links",
+      "kind": "links",
+      "limit": 20
+    },
+    {
+      "name": "inspect headings",
+      "kind": "inspect-all",
+      "selector": "h1, h2, h3",
+      "limit": 10
+    },
+    {
+      "name": "inspect main region",
+      "kind": "inspect",
+      "selector": "main"
+    }
+  ]
+}

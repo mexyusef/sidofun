@@ -1,0 +1,74 @@
+{
+  "contextQuery": "save controls",
+  "timeoutMs": 30000,
+  "intervalMs": 750,
+  "settleAfterEach": "page",
+  "settleQuietMs": 1200,
+  "stableReads": 2,
+  "retryCount": 1,
+  "retryDelayMs": 1000,
+  "steps": [
+    {
+      "kind": "require-text",
+      "text": "Control Widgets"
+    },
+    {
+      "kind": "fill",
+      "query": "Start date",
+      "value": "2026-04-01"
+    },
+    {
+      "kind": "fill",
+      "query": "Preferred time",
+      "value": "09:30"
+    },
+    {
+      "kind": "radio",
+      "query": "Plan",
+      "value": "Enterprise"
+    },
+    {
+      "kind": "segment",
+      "query": "Theme",
+      "value": "Dark"
+    },
+    {
+      "kind": "range",
+      "query": "Priority slider",
+      "value": "8"
+    },
+    {
+      "kind": "toggle",
+      "query": "Remember me",
+      "desiredState": "on"
+    },
+    {
+      "kind": "submit-query",
+      "query": "Save controls",
+      "retryCount": 1,
+      "retryDelayMs": 500
+    },
+    {
+      "kind": "wait-text",
+      "text": "\"theme\": \"dark\""
+    },
+    {
+      "kind": "branch",
+      "condition": {
+        "textIncludes": "\"remember\": true"
+      },
+      "then": [
+        {
+          "kind": "require-text",
+          "text": "\"plan\": \"enterprise\""
+        }
+      ],
+      "else": [
+        {
+          "kind": "require-selector",
+          "selector": "#result"
+        }
+      ]
+    }
+  ]
+}

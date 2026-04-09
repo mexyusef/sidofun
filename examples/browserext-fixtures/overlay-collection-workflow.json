@@ -1,0 +1,71 @@
+{
+  "steps": [
+    {
+      "name": "detect dialog",
+      "kind": "dialogs",
+      "saveAs": "dialogs"
+    },
+    {
+      "name": "dismiss dialog",
+      "kind": "dialog-close",
+      "query": "Preferences dialog"
+    },
+    {
+      "name": "open theme menu",
+      "kind": "click",
+      "query": "Open Theme Menu"
+    },
+    {
+      "name": "menu visible",
+      "kind": "branch",
+      "condition": {
+        "menuExists": "Theme menu"
+      },
+      "then": [
+        {
+          "kind": "menu-select",
+          "menu": "Theme menu",
+          "option": "Dark"
+        }
+      ]
+    },
+    {
+      "name": "expand advanced",
+      "kind": "branch",
+      "condition": {
+        "disclosureExpanded": {
+          "query": "Advanced settings",
+          "expanded": false
+        }
+      },
+      "then": [
+        {
+          "kind": "disclosure-toggle",
+          "query": "Advanced settings",
+          "desiredState": "open"
+        }
+      ]
+    },
+    {
+      "name": "pick result",
+      "kind": "branch",
+      "condition": {
+        "collectionItemExists": {
+          "collection": "Search results",
+          "item": "Result Alpha"
+        }
+      },
+      "then": [
+        {
+          "kind": "collection-click",
+          "collection": "Search results",
+          "item": "Result Alpha"
+        }
+      ]
+    },
+    {
+      "name": "final snapshot",
+      "kind": "snapshot"
+    }
+  ]
+}
