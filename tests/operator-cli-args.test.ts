@@ -146,6 +146,436 @@ describe('operator cli args', () => {
       headless: false,
       json: false
     });
+    expect(parseOperatorCommand(['browser', 'runtime', 'list'])).toEqual({
+      kind: 'browser_runtime_list',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'info', 'browser_rt_1'])).toEqual({
+      kind: 'browser_runtime_info',
+      runtimeId: 'browser_rt_1',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'policy', 'get', '--json'])).toEqual({
+      kind: 'browser_policy_get',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'policy', 'set', '--enabled', '--allow', 'example.com', '--deny', 'evil.example.com'])).toEqual({
+      kind: 'browser_policy_set',
+      enabled: true,
+      allowList: ['example.com'],
+      denyList: ['evil.example.com'],
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'windows', '--runtime', 'browser_rt_1', '--runtime', 'browser_rt_2', '--json'])).toEqual({
+      kind: 'browser_runtime_windows',
+      runtimeIds: ['browser_rt_1', 'browser_rt_2'],
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'windows', '--json'])).toEqual({
+      kind: 'browser_runtime_windows',
+      runtimeIds: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'bind', 'browser_rt_1', '--window', '123456'])).toEqual({
+      kind: 'browser_runtime_bind',
+      runtimeId: 'browser_rt_1',
+      windowHandle: 123456,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'open-tab', 'browser_rt_1', 'https://example.com', '--json'])).toEqual({
+      kind: 'browser_runtime_open_tab',
+      runtimeId: 'browser_rt_1',
+      url: 'https://example.com',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'tile', '--runtime', 'browser_rt_1', '--preset', 'main-left', '--columns', '2', '--gap', '16', '--x', '10', '--y', '20', '--width', '1400', '--height', '900'])).toEqual({
+      kind: 'browser_runtime_tile',
+      runtimeIds: ['browser_rt_1'],
+      preset: 'main-left',
+      columns: 2,
+      gap: 16,
+      area: { x: 10, y: 20, width: 1400, height: 900 },
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'tile', '--preset', '2-up', '--json'])).toEqual({
+      kind: 'browser_runtime_tile',
+      runtimeIds: undefined,
+      preset: '2-up',
+      columns: undefined,
+      gap: undefined,
+      area: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'list', '--runtime', 'browser_rt_1', '--json'])).toEqual({
+      kind: 'browser_page_list',
+      runtimeId: 'browser_rt_1',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'open', 'browser_rt_1', 'https://example.com'])).toEqual({
+      kind: 'browser_page_open',
+      runtimeId: 'browser_rt_1',
+      url: 'https://example.com',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'info', 'browser_pg_1', '--json'])).toEqual({
+      kind: 'browser_page_info',
+      pageId: 'browser_pg_1',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'dom', 'browser_pg_1', '--json'])).toEqual({
+      kind: 'browser_page_dom',
+      pageId: 'browser_pg_1',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'fill-commit', 'browser_pg_1', "input[name='email']", 'user@example.com', '--json'])).toEqual({
+      kind: 'browser_page_fill_commit',
+      pageId: 'browser_pg_1',
+      selector: "input[name='email']",
+      value: 'user@example.com',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'wait-ready', 'browser_pg_1', '--selector', '#email', '--selector', '#password', '--timeout-ms', '5000', '--interval-ms', '100', '--stable-reads', '2'])).toEqual({
+      kind: 'browser_page_wait_ready',
+      pageId: 'browser_pg_1',
+      selectors: ['#email', '#password'],
+      timeoutMs: 5000,
+      intervalMs: 100,
+      stableReads: 2,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'click-text', 'browser_pg_1', 'Continue with email', '--contains', '--within', 'main', '--top-region', '--top-max', '120', '--no-links', '--settle-after', 'page', '--settle-timeout-ms', '4000', '--settle-stable-reads', '2'])).toEqual({
+      kind: 'browser_page_click_text',
+      pageId: 'browser_pg_1',
+      text: 'Continue with email',
+      exact: false,
+      withinSelector: 'main',
+      topRegionOnly: true,
+      topRegionMax: 120,
+      allowLinks: false,
+      settleAfter: 'page',
+      settleTimeoutMs: 4000,
+      settleStableReads: 2,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'check-agreement', 'browser_pg_1', '--selector', 'input[type="checkbox"]', '--label', 'terms of service', '--label', 'privacy policy'])).toEqual({
+      kind: 'browser_page_check_agreement',
+      pageId: 'browser_pg_1',
+      selector: 'input[type="checkbox"]',
+      labelTextIncludes: ['terms of service', 'privacy policy'],
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'settle', 'browser_pg_1', 'dom', '--timeout-ms', '5000', '--interval-ms', '100', '--stable-reads', '2', '--quiet-ms', '250'])).toEqual({
+      kind: 'browser_page_settle',
+      pageId: 'browser_pg_1',
+      mode: 'dom',
+      timeoutMs: 5000,
+      intervalMs: 100,
+      stableReads: 2,
+      quietMs: 250,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'signup-step', 'browser_pg_1', '--email', 'user@example.com', '--password', 'secret', '--email-selector', '#email', '--password-selector', '#password', '--submit-text', 'Next', '--wait-ready-timeout-ms', '7000'])).toEqual({
+      kind: 'browser_page_signup_step',
+      pageId: 'browser_pg_1',
+      email: 'user@example.com',
+      password: 'secret',
+      emailSelector: '#email',
+      passwordSelector: '#password',
+      submitText: 'Next',
+      waitReadyTimeoutMs: 7000,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'complete-profile', 'browser_pg_1', '--email', 'user@example.com', '--username', 'jan_usef', '--full-name', 'Jan Usef', '--username-selector', '#username', '--full-name-selector', '#full_name', '--agreement-selector', '#agree', '--agreement-label', 'terms of service', '--submit-text', 'Create Account', '--wait-ready-timeout-ms', '9000'])).toEqual({
+      kind: 'browser_page_complete_profile',
+      pageId: 'browser_pg_1',
+      email: 'user@example.com',
+      username: 'jan_usef',
+      fullName: 'Jan Usef',
+      usernameSelector: '#username',
+      fullNameSelector: '#full_name',
+      agreementSelector: '#agree',
+      agreementTextIncludes: ['terms of service'],
+      submitText: 'Create Account',
+      waitReadyTimeoutMs: 9000,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'locate', 'browser_pg_1', 'Email', '--kind', 'field', '--limit', '3', '--exact', '--json'])).toEqual({
+      kind: 'browser_page_locate',
+      pageId: 'browser_pg_1',
+      query: 'Email',
+      queryKind: 'field',
+      exact: true,
+      formSelector: undefined,
+      rootSelector: undefined,
+      limit: 3,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'fill-query', 'browser_pg_1', 'Email', 'user@example.com', '--form', 'form.login'])).toEqual({
+      kind: 'browser_page_fill_query',
+      pageId: 'browser_pg_1',
+      query: 'Email',
+      value: 'user@example.com',
+      exact: false,
+      formSelector: 'form.login',
+      rootSelector: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'click-query', 'browser_pg_1', 'Continue', '--kind', 'button', '--root', 'main'])).toEqual({
+      kind: 'browser_page_click_query',
+      pageId: 'browser_pg_1',
+      query: 'Continue',
+      queryKind: 'button',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: 'main',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'submit', 'browser_pg_1', 'Sign in', '--json'])).toEqual({
+      kind: 'browser_page_submit',
+      pageId: 'browser_pg_1',
+      query: 'Sign in',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'scroll', 'browser_pg_1', 'down', 'ResultsPane', '--json'])).toEqual({
+      kind: 'browser_page_scroll',
+      pageId: 'browser_pg_1',
+      direction: 'down',
+      query: 'ResultsPane',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'scroll-text', 'browser_pg_1', 'Welcome', '--nth', '2'])).toEqual({
+      kind: 'browser_page_scroll_text',
+      pageId: 'browser_pg_1',
+      text: 'Welcome',
+      nth: 2,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'send-keys', 'browser_pg_1', 'Control+L', '--query', 'Search'])).toEqual({
+      kind: 'browser_page_send_keys',
+      pageId: 'browser_pg_1',
+      keys: 'Control+L',
+      query: 'Search',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'options', 'browser_pg_1', 'Country', '--exact', '--form', 'form.signup'])).toEqual({
+      kind: 'browser_page_select_options',
+      pageId: 'browser_pg_1',
+      query: 'Country',
+      exact: true,
+      formSelector: 'form.signup',
+      rootSelector: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'select-option', 'browser_pg_1', 'Country', 'Indonesia', '--root', 'main'])).toEqual({
+      kind: 'browser_page_select_option',
+      pageId: 'browser_pg_1',
+      query: 'Country',
+      text: 'Indonesia',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: 'main',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'uploader', 'browser_pg_1', 'Resume'])).toEqual({
+      kind: 'browser_page_detect_file_uploader',
+      pageId: 'browser_pg_1',
+      query: 'Resume',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'replay', 'browser_pg_1', '--file', 'replay.json', '--json'])).toEqual({
+      kind: 'browser_page_replay',
+      pageId: 'browser_pg_1',
+      filePath: 'replay.json',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'wait-text', 'browser_pg_1', 'Welcome back', '--timeout-ms', '9000', '--interval-ms', '200'])).toEqual({
+      kind: 'browser_page_wait_text',
+      pageId: 'browser_pg_1',
+      text: 'Welcome back',
+      timeoutMs: 9000,
+      intervalMs: 200,
+      json: false
+    });
+    expect(parseOperatorCommand([
+      'browser', 'page', 'form-workflow', 'browser_pg_1',
+      '--field', 'Email=user@example.com',
+      '--field', 'Password=secret',
+      '--submit',
+      '--submit-query', 'Continue',
+      '--wait-url-includes', '/dashboard',
+      '--wait-text', 'Welcome',
+      '--wait-selector', '.app-shell',
+      '--wait-no-selector', '.loading',
+      '--timeout-ms', '12000',
+      '--interval-ms', '250',
+      '--json'
+    ])).toEqual({
+      kind: 'browser_page_form_workflow',
+      pageId: 'browser_pg_1',
+      fields: [
+        { query: 'Email', value: 'user@example.com' },
+        { query: 'Password', value: 'secret' }
+      ],
+      submit: true,
+      submitQuery: 'Continue',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      waitUrlIncludes: '/dashboard',
+      waitText: 'Welcome',
+      waitSelector: '.app-shell',
+      waitNoSelector: '.loading',
+      timeoutMs: 12000,
+      intervalMs: 250,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'auth-login', 'browser_pg_1', '--email', 'user@example.com', '--password', 'secret', '--wait-url-includes', '/dashboard'])).toEqual({
+      kind: 'browser_page_auth_login',
+      pageId: 'browser_pg_1',
+      email: 'user@example.com',
+      username: undefined,
+      password: 'secret',
+      submitQuery: undefined,
+      skipSubmit: false,
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      waitUrlIncludes: '/dashboard',
+      waitText: undefined,
+      waitSelector: undefined,
+      waitNoSelector: undefined,
+      timeoutMs: undefined,
+      intervalMs: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'open-workflow', 'browser_rt_1', 'https://example.com/login', '--field', 'Username=demo-user', '--field', 'Password=secret', '--submit', '--submit-query', 'Login', '--wait-url-includes', '/app', '--json'])).toEqual({
+      kind: 'browser_page_open_workflow',
+      runtimeId: 'browser_rt_1',
+      url: 'https://example.com/login',
+      fields: [
+        { query: 'Username', value: 'demo-user' },
+        { query: 'Password', value: 'secret' }
+      ],
+      submit: true,
+      submitQuery: 'Login',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      waitUrlIncludes: '/app',
+      waitText: undefined,
+      waitSelector: undefined,
+      waitNoSelector: undefined,
+      timeoutMs: undefined,
+      intervalMs: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'open-and-login', 'browser_rt_1', 'https://chatgpt.com/', '--email', 'user@example.com', '--password', 'secret', '--submit-query', 'Continue'])).toEqual({
+      kind: 'browser_page_open_and_login',
+      runtimeId: 'browser_rt_1',
+      url: 'https://chatgpt.com/',
+      email: 'user@example.com',
+      username: undefined,
+      password: 'secret',
+      submitQuery: 'Continue',
+      skipSubmit: false,
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      waitUrlIncludes: undefined,
+      waitText: undefined,
+      waitSelector: undefined,
+      waitNoSelector: undefined,
+      timeoutMs: undefined,
+      intervalMs: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'list', '--json'])).toEqual({
+      kind: 'browser_page_profile_list',
+      profileFile: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'list', '--file', 'profiles.json'])).toEqual({
+      kind: 'browser_page_profile_list',
+      profileFile: 'profiles.json',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'info', 'chatgpt'])).toEqual({
+      kind: 'browser_page_profile_info',
+      profileId: 'chatgpt',
+      profileFile: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'info', 'chatgpt', '--file', 'profiles.json'])).toEqual({
+      kind: 'browser_page_profile_info',
+      profileId: 'chatgpt',
+      profileFile: 'profiles.json',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'login', 'browser_rt_1', 'chatgpt', '--email', 'user@example.com', '--password', 'secret'])).toEqual({
+      kind: 'browser_page_profile_login',
+      runtimeId: 'browser_rt_1',
+      profileId: 'chatgpt',
+      profileFile: undefined,
+      url: undefined,
+      email: 'user@example.com',
+      username: undefined,
+      password: 'secret',
+      confirmPassword: undefined,
+      fullName: undefined,
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      timeoutMs: undefined,
+      intervalMs: undefined,
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'profile', 'signup', 'browser_rt_1', 'chatgpt', '--email', 'user@example.com', '--password', 'secret', '--full-name', 'Usef Test', '--json'])).toEqual({
+      kind: 'browser_page_profile_signup',
+      runtimeId: 'browser_rt_1',
+      profileId: 'chatgpt',
+      profileFile: undefined,
+      url: undefined,
+      email: 'user@example.com',
+      username: undefined,
+      password: 'secret',
+      confirmPassword: undefined,
+      fullName: 'Usef Test',
+      exact: false,
+      formSelector: undefined,
+      rootSelector: undefined,
+      timeoutMs: undefined,
+      intervalMs: undefined,
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'agent', 'run', 'browser_rt_1', '--file', 'agent.json', '--goal', 'Log into the site', '--trajectory', 'trajectory_1', '--json'])).toEqual({
+      kind: 'browser_agent_run',
+      runtimeId: 'browser_rt_1',
+      filePath: 'agent.json',
+      url: undefined,
+      goal: 'Log into the site',
+      trajectoryId: 'trajectory_1',
+      json: true
+    });
+    expect(parseOperatorCommand(['browser', 'page', 'close', 'browser_pg_1'])).toEqual({
+      kind: 'browser_page_close',
+      pageId: 'browser_pg_1',
+      json: false
+    });
+    expect(parseOperatorCommand(['browser', 'runtime', 'tile', '--preset', 'newsroom-5', '--json'])).toEqual({
+      kind: 'browser_runtime_tile',
+      runtimeIds: undefined,
+      preset: 'newsroom-5',
+      columns: undefined,
+      gap: undefined,
+      area: undefined,
+      json: true
+    });
     expect(parseOperatorCommand(['browserext', 'status'])).toEqual({ kind: 'browser_extension_status', json: false });
     expect(parseOperatorCommand(['browserext', 'capabilities', '--json'])).toEqual({ kind: 'browser_extension_capabilities', json: true });
     expect(parseOperatorCommand(['browserext', 'wait-provider', '--timeout-ms', '30000', '--interval-ms', '750'])).toEqual({
@@ -2926,6 +3356,57 @@ describe('operator cli args', () => {
     expect(getOperatorHelpText()).toContain('sidofun terminal spawn <cmd|pwsh>');
     expect(getOperatorHelpText()).toContain('--dir <path>');
     expect(getOperatorHelpText()).toContain('sidofun browser launch firefox --profile default-release --url https://gmail.com');
+    expect(getOperatorHelpText()).toContain('sidofun browser runtime list --json');
+    expect(getOperatorHelpText()).toContain('sidofun browser runtime policy get [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser runtime policy set [--enabled|--disabled] [--allow <host-or-url>]... [--deny <host-or-url>]... [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser runtime open-tab <runtime-id> <url> [--json]');
+    expect(getOperatorHelpText()).toContain('Run `sidofun browser runtime list --json` to get `<runtime-id>`.');
+    expect(getOperatorHelpText()).toContain('To constrain where runtime-backed automation may navigate, run `sidofun browser runtime policy set --enabled --allow example.com --allow app.example.com --json`.');
+    expect(getOperatorHelpText()).toContain('Run `sidofun browser page list --runtime <runtime-id> --json` to get `<page-id>`.');
+    expect(getOperatorHelpText()).toContain('sidofun browser page locate <page-id> <query>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page dom <page-id> [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page fill-commit <page-id> <selector> <value> [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page wait-ready <page-id> --selector <selector>... [--timeout-ms <n>] [--interval-ms <n>] [--stable-reads <n>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page click-text <page-id> <text>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page check-agreement <page-id>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page settle <page-id> <dom|page|network>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page signup-step <page-id> --email <value> --password <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page complete-profile <page-id> --email <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page scroll <page-id> <up|down|top|bottom> [query] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page send-keys <page-id> <keys> [--query <query>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page options <page-id> <query> [--exact] [--form <selector>] [--root <selector>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page select-option <page-id> <query> <text>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page uploader <page-id> <query> [--exact] [--form <selector>] [--root <selector>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page replay <page-id> --file <path> [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page fill-query <page-id> <query> <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page click-query <page-id> <query>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page submit <page-id> [query]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page wait-text <page-id> <text>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page form-workflow <page-id> --field "<query>=<value>"');
+    expect(getOperatorHelpText()).toContain('sidofun browser page auth-login <page-id> (--email <value> | --username <value>) --password <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page auth-signup <page-id> --password <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page open-workflow <runtime-id> <url> --field "<query>=<value>"');
+    expect(getOperatorHelpText()).toContain('sidofun browser page open-and-login <runtime-id> <url> (--email <value> | --username <value>) --password <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page open-and-signup <runtime-id> <url> --password <value>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page profile list [--file <path>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page profile info <profile-id> [--file <path>] [--json]');
+    expect(getOperatorHelpText()).toContain('sidofun browser page profile login <runtime-id> <profile-id>');
+    expect(getOperatorHelpText()).toContain('sidofun browser page profile signup <runtime-id> <profile-id>');
+    expect(getOperatorHelpText()).toContain('Run `sidofun browser page locate <page-id> "Email" --kind field --json`');
+    expect(getOperatorHelpText()).toContain('Use `--form <selector>` or `--root <selector>` when a page needs custom selector scoping');
+    expect(getOperatorHelpText()).toContain('For low-level primitives, use `sidofun browser page fill-commit <page-id> "input[name=\'email\']" user@example.com --json`');
+    expect(getOperatorHelpText()).toContain('For repeated signup flows, use `sidofun browser page signup-step <page-id> --email user@example.com --password secret --submit-text "Next" --json`');
+    expect(getOperatorHelpText()).toContain('For repeated profile completion flows, use `sidofun browser page complete-profile <page-id> --email user@example.com --submit-text "Create Account" --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page scroll-text <page-id> "Pricing" --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page send-keys <page-id> "Control+L" --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page replay <page-id> --file _legacy/workflows/browser-page-replay.json --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page form-workflow <page-id> --field "Email=user@example.com" --field "Password=secret" --submit --wait-url-includes dashboard --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page auth-login <page-id> --email user@example.com --password secret --wait-url-includes dashboard --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page open-workflow <runtime-id> https://example.com/login --field "Email=user@example.com" --field "Password=secret" --submit --wait-url-includes dashboard --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page open-and-login <runtime-id> https://example.com/login --email user@example.com --password secret --wait-url-includes dashboard --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page profile login <runtime-id> <profile-id> --username demo-user --password secret --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser page profile list --file _legacy/workflows/browser-page-profiles.json --json`');
+    expect(getOperatorHelpText()).toContain('`sidofun browser agent run <runtime-id> --file examples/workflows/browser-agent-verify.json --json`');
     expect(getOperatorHelpText()).toContain('sidofun browserext status');
     expect(getOperatorHelpText()).toContain('sidofun browserext wait-provider');
     expect(getOperatorHelpText()).toContain('sidofun browserext workspace set <name> <path>');
@@ -3127,8 +3608,7 @@ describe('operator cli args', () => {
     expect(getOperatorHelpText()).toContain('sidofun coder open <codex|opencode|qwen> [prompt]');
     expect(getOperatorHelpText()).toContain('sidofun coder run <codex|opencode|qwen> <prompt>');
     expect(getOperatorHelpText()).toContain('--private');
-    expect(getOperatorHelpText()).toContain(`sidofun cmd type 1 "echo hello
-"`);
+    expect(getOperatorHelpText()).toContain('sidofun cmd type 1 "echo hello\\n"');
     expect(getOperatorHelpText()).toContain('sidofun cmd screenshot <session-id|index>');
     expect(getOperatorHelpText()).toContain('sidofun pwsh screenshot <session-id|index>');
     expect(getOperatorHelpText()).toContain('--text <text>');

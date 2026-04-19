@@ -186,6 +186,41 @@ describe('BrowserService', () => {
     expect(result.remoteDebuggingUrl).toBe('http://127.0.0.1:9333');
   });
 
+  test('adds Chromium automation flags that suppress first-run gating for debuggable launches', () => {
+    const root = makeTempDir();
+    const executablePath = path.join(root, 'chrome.exe');
+    fs.writeFileSync(executablePath, '');
+
+    const definitions: BrowserDefinition[] = [{
+      id: 'chrome',
+      displayName: 'Google Chrome',
+      executableCandidates: [executablePath],
+      userDataCandidates: [path.join(root, 'ChromeUserData')],
+      profileStrategy: 'chromium',
+      supportsProfileLaunch: true,
+      launchFlags: { privateMode: ['--incognito'], headless: ['--headless'] }
+    }];
+
+    const service = new BrowserService({ definitions });
+    const result = service.buildLaunchCommand({
+      browserId: 'chrome',
+      automationMode: 'debuggable',
+      debugPort: 9444,
+      url: 'example.com'
+    });
+
+    expect(result.command).toEqual([
+      executablePath,
+      '--remote-debugging-port=9444',
+      '--remote-debugging-address=127.0.0.1',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-default-apps',
+      '--disable-sync',
+      'https://example.com'
+    ]);
+  });
+
   test('keeps direct-launch chromium browsers out of the profile workflow while preserving private/headless flags', () => {
     const root = makeTempDir();
     const executablePath = path.join(root, 'edge.exe');

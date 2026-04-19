@@ -102,6 +102,64 @@ export async function executeBrowserExtensionWorkflowFormStep(
       }
       return result;
     }
+    case 'signup-form': {
+      const emailSelector = String(step.emailSelector || '');
+      const passwordSelector = String(step.passwordSelector || '');
+      const emailValue = String(step.emailValue ?? '');
+      const passwordValue = String(step.passwordValue ?? '');
+      const submitSelector = typeof step.submitSelector === 'string' ? step.submitSelector : resolvedSubmitSelector;
+
+      const emailFill = await deps.browserExtensionService.formFillHuman(sessionId, emailSelector, emailValue, {
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs,
+        delayMs: typeof defaults.delayMs === 'number' ? defaults.delayMs : 35,
+        jitterMs: 20
+      });
+      const emailCommit = await deps.browserExtensionService.formCommit(sessionId, {
+        selector: emailSelector,
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs
+      });
+      const passwordFill = await deps.browserExtensionService.formFillHuman(sessionId, passwordSelector, passwordValue, {
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs,
+        delayMs: typeof defaults.delayMs === 'number' ? defaults.delayMs : 35,
+        jitterMs: 20
+      });
+      const passwordCommit = await deps.browserExtensionService.formCommit(sessionId, {
+        selector: passwordSelector,
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs
+      });
+
+      let submit: Record<string, unknown> = { submitted: false };
+      if (submitSelector) {
+        const clickResult = await deps.browserExtensionService.clickHuman(sessionId, submitSelector, {
+          frameSelectors: effectiveFrameSelectors,
+          timeoutMs
+        });
+        const settleMode = (step.settleAfter as 'dom' | 'network' | 'page' | undefined) ?? 'page';
+        const settleResult = await deps.settle(settleMode, {
+          quietMs: typeof step.settleQuietMs === 'number' ? step.settleQuietMs : settleQuietMs,
+          timeoutMs,
+          intervalMs,
+          stableReads: typeof step.stableReads === 'number' ? step.stableReads : stableReads
+        });
+        submit = {
+          ...clickResult,
+          ...classifyBrowserExtensionSubmitOutcome(settleResult),
+          settle: settleResult
+        };
+      }
+
+      return {
+        emailFill,
+        emailCommit,
+        passwordFill,
+        passwordCommit,
+        submit
+      };
+    }
     case 'clear-selector':
       return deps.browserExtensionService.formClear(sessionId, String(step.selector || ''), {
         frameSelectors: effectiveFrameSelectors,
@@ -160,6 +218,74 @@ export async function executeBrowserExtensionWorkflowFormStep(
         frameSelectors: effectiveFrameSelectors,
         timeoutMs
       });
+    case 'complete-profile': {
+      const usernameSelector = String(step.usernameSelector || '');
+      const fullNameSelector = String(step.fullNameSelector || '');
+      const usernameValue = String(step.usernameValue ?? '');
+      const fullNameValue = String(step.fullNameValue ?? '');
+      const agreementSelector = typeof step.agreementSelector === 'string' ? step.agreementSelector : undefined;
+      const submitSelector = typeof step.submitSelector === 'string' ? step.submitSelector : resolvedSubmitSelector;
+
+      const usernameFill = await deps.browserExtensionService.formFillHuman(sessionId, usernameSelector, usernameValue, {
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs,
+        delayMs: typeof defaults.delayMs === 'number' ? defaults.delayMs : 35,
+        jitterMs: 20
+      });
+      const usernameCommit = await deps.browserExtensionService.formCommit(sessionId, {
+        selector: usernameSelector,
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs
+      });
+      const fullNameFill = await deps.browserExtensionService.formFillHuman(sessionId, fullNameSelector, fullNameValue, {
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs,
+        delayMs: typeof defaults.delayMs === 'number' ? defaults.delayMs : 35,
+        jitterMs: 20
+      });
+      const fullNameCommit = await deps.browserExtensionService.formCommit(sessionId, {
+        selector: fullNameSelector,
+        frameSelectors: effectiveFrameSelectors,
+        timeoutMs
+      });
+
+      let agreement: Record<string, unknown> = { checked: false };
+      if (agreementSelector) {
+        agreement = await deps.browserExtensionService.clickHuman(sessionId, agreementSelector, {
+          frameSelectors: effectiveFrameSelectors,
+          timeoutMs
+        });
+      }
+
+      let submit: Record<string, unknown> = { submitted: false };
+      if (submitSelector) {
+        const clickResult = await deps.browserExtensionService.clickHuman(sessionId, submitSelector, {
+          frameSelectors: effectiveFrameSelectors,
+          timeoutMs
+        });
+        const settleMode = (step.settleAfter as 'dom' | 'network' | 'page' | undefined) ?? 'page';
+        const settleResult = await deps.settle(settleMode, {
+          quietMs: typeof step.settleQuietMs === 'number' ? step.settleQuietMs : settleQuietMs,
+          timeoutMs,
+          intervalMs,
+          stableReads: typeof step.stableReads === 'number' ? step.stableReads : stableReads
+        });
+        submit = {
+          ...clickResult,
+          ...classifyBrowserExtensionSubmitOutcome(settleResult),
+          settle: settleResult
+        };
+      }
+
+      return {
+        usernameFill,
+        usernameCommit,
+        fullNameFill,
+        fullNameCommit,
+        agreement,
+        submit
+      };
+    }
     case 'radio':
       return deps.browserExtensionService.selectRadioOption(sessionId, String(step.query || ''), String(step.value ?? ''), {
         frameSelectors: effectiveFrameSelectors,

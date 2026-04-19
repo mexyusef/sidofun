@@ -74,7 +74,275 @@ export type OperatorCommand =
     }
   | { kind: 'browser_runtime_list'; json: boolean }
   | { kind: 'browser_runtime_info'; runtimeId: string; json: boolean }
+  | { kind: 'browser_policy_get'; json: boolean }
+  | { kind: 'browser_policy_set'; enabled?: boolean; allowList?: string[]; denyList?: string[]; json: boolean }
+  | { kind: 'browser_runtime_windows'; runtimeIds?: string[]; json: boolean }
+  | { kind: 'browser_runtime_bind'; runtimeId: string; windowHandle?: number; json: boolean }
+  | { kind: 'browser_runtime_open_tab'; runtimeId: string; url?: string; json: boolean }
+  | {
+      kind: 'browser_runtime_tile';
+      runtimeIds?: string[];
+      preset?: '2-up' | '3-column' | '2x2' | 'main-left' | 'main-right' | 'newsroom-5' | 'newsroom-6';
+      columns?: number;
+      gap?: number;
+      area?: { x: number; y: number; width: number; height: number };
+      json: boolean;
+    }
   | { kind: 'browser_runtime_close'; runtimeId: string; json: boolean }
+  | { kind: 'browser_page_list'; runtimeId?: string; json: boolean }
+  | { kind: 'browser_page_open'; runtimeId: string; url?: string; json: boolean }
+  | { kind: 'browser_page_info'; pageId: string; json: boolean }
+  | {
+      kind: 'browser_page_locate';
+      pageId: string;
+      query: string;
+      queryKind?: 'field' | 'button' | 'link' | 'any';
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      limit?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_fill_query';
+      pageId: string;
+      query: string;
+      value: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_click_query';
+      pageId: string;
+      query: string;
+      queryKind?: 'field' | 'button' | 'link' | 'any';
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_submit';
+      pageId: string;
+      query?: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_wait_text';
+      pageId: string;
+      text: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_form_workflow';
+      pageId: string;
+      fields: Array<{ query: string; value: string }>;
+      submit: boolean;
+      submitQuery?: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_auth_login';
+      pageId: string;
+      email?: string;
+      username?: string;
+      password: string;
+      submitQuery?: string;
+      skipSubmit: boolean;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_auth_signup';
+      pageId: string;
+      fullName?: string;
+      username?: string;
+      email?: string;
+      password: string;
+      confirmPassword?: string;
+      submitQuery?: string;
+      skipSubmit: boolean;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_open_workflow';
+      runtimeId: string;
+      url: string;
+      fields: Array<{ query: string; value: string }>;
+      submit: boolean;
+      submitQuery?: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_open_and_login';
+      runtimeId: string;
+      url: string;
+      email?: string;
+      username?: string;
+      password: string;
+      submitQuery?: string;
+      skipSubmit: boolean;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_open_and_signup';
+      runtimeId: string;
+      url: string;
+      fullName?: string;
+      username?: string;
+      email?: string;
+      password: string;
+      confirmPassword?: string;
+      submitQuery?: string;
+      skipSubmit: boolean;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      waitUrlIncludes?: string;
+      waitText?: string;
+      waitSelector?: string;
+      waitNoSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | { kind: 'browser_page_profile_list'; profileFile?: string; json: boolean }
+  | { kind: 'browser_page_profile_info'; profileId: string; profileFile?: string; json: boolean }
+  | {
+      kind: 'browser_page_profile_login';
+      runtimeId: string;
+      profileId: string;
+      profileFile?: string;
+      url?: string;
+      email?: string;
+      username?: string;
+      password?: string;
+      confirmPassword?: string;
+      fullName?: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_profile_signup';
+      runtimeId: string;
+      profileId: string;
+      profileFile?: string;
+      url?: string;
+      email?: string;
+      username?: string;
+      password?: string;
+      confirmPassword?: string;
+      fullName?: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      timeoutMs?: number;
+      intervalMs?: number;
+      json: boolean;
+    }
+  | { kind: 'browser_page_dom'; pageId: string; json: boolean }
+  | { kind: 'browser_page_fill_commit'; pageId: string; selector: string; value: string; json: boolean }
+  | { kind: 'browser_page_wait_ready'; pageId: string; selectors: string[]; timeoutMs?: number; intervalMs?: number; stableReads?: number; json: boolean }
+  | { kind: 'browser_page_click_text'; pageId: string; text: string; exact: boolean; withinSelector?: string; topRegionOnly: boolean; topRegionMax?: number; allowLinks: boolean; settleAfter?: 'dom' | 'page' | 'network'; settleTimeoutMs?: number; settleStableReads?: number; json: boolean }
+  | { kind: 'browser_page_check_agreement'; pageId: string; selector?: string; labelTextIncludes?: string[]; json: boolean }
+  | { kind: 'browser_page_settle'; pageId: string; mode: 'dom' | 'page' | 'network'; timeoutMs?: number; intervalMs?: number; stableReads?: number; quietMs?: number; json: boolean }
+  | { kind: 'browser_page_complete_profile'; pageId: string; email: string; username?: string; fullName?: string; usernameSelector?: string; fullNameSelector?: string; agreementSelector?: string; agreementTextIncludes?: string[]; submitText?: string; waitReadyTimeoutMs?: number; json: boolean }
+  | { kind: 'browser_page_signup_step'; pageId: string; email: string; password: string; emailSelector?: string; passwordSelector?: string; submitText?: string; waitReadyTimeoutMs?: number; json: boolean }
+  | {
+      kind: 'browser_page_scroll';
+      pageId: string;
+      direction: 'up' | 'down' | 'top' | 'bottom';
+      query?: string;
+      json: boolean;
+    }
+  | { kind: 'browser_page_scroll_text'; pageId: string; text: string; nth?: number; json: boolean }
+  | { kind: 'browser_page_send_keys'; pageId: string; keys: string; query?: string; json: boolean }
+  | {
+      kind: 'browser_page_select_options';
+      pageId: string;
+      query: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_select_option';
+      pageId: string;
+      query: string;
+      text: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | {
+      kind: 'browser_page_detect_file_uploader';
+      pageId: string;
+      query: string;
+      exact: boolean;
+      formSelector?: string;
+      rootSelector?: string;
+      json: boolean;
+    }
+  | { kind: 'browser_page_replay'; pageId: string; filePath: string; json: boolean }
+  | { kind: 'browser_agent_run'; runtimeId: string; filePath: string; url?: string; goal?: string; trajectoryId?: string; json: boolean }
+  | { kind: 'browser_page_close'; pageId: string; json: boolean }
   | { kind: 'hf_papers_status'; json: boolean }
   | { kind: 'hf_papers_doctor'; backend?: 'api' | 'cli' | 'auto'; timeoutMs?: number; json: boolean }
   | { kind: 'hf_papers_search'; query: string; limit?: number; backend?: 'api' | 'cli' | 'auto'; token?: string; includeRaw: boolean; timeoutMs?: number; json: boolean }
@@ -5742,11 +6010,82 @@ export function parseOperatorCommand(argv: string[]): OperatorCommand {
   }
 
   if (domain === 'browser' && action === 'runtime') {
+    if (value === 'policy') {
+      const subAction = filtered[3];
+      if (subAction === 'get') {
+        return { kind: 'browser_policy_get', json };
+      }
+      if (subAction === 'set') {
+        const allowList = readFlagValues(filtered, '--allow');
+        const denyList = readFlagValues(filtered, '--deny');
+        return {
+          kind: 'browser_policy_set',
+          enabled: filtered.includes('--enabled') ? true : filtered.includes('--disabled') ? false : undefined,
+          allowList: allowList.length > 0 ? allowList : undefined,
+          denyList: denyList.length > 0 ? denyList : undefined,
+          json
+        };
+      }
+    }
     if (value === 'list') {
       return { kind: 'browser_runtime_list', json };
     }
     if (value === 'info' && filtered[3]) {
       return { kind: 'browser_runtime_info', runtimeId: filtered[3], json };
+    }
+    if ((value === 'windows' || value === 'window') && (filtered[3] === undefined || filtered[3].startsWith('--'))) {
+      const runtimeIds = readFlagValues(filtered, '--runtime');
+      return {
+        kind: 'browser_runtime_windows',
+        runtimeIds: runtimeIds.length ? runtimeIds : undefined,
+        json
+      };
+    }
+    if (value === 'bind' && filtered[3]) {
+      const windowHandleRaw = readFlagValue(filtered, '--window');
+      const parsedWindowHandle = windowHandleRaw ? Number.parseInt(windowHandleRaw, 10) : undefined;
+      return {
+        kind: 'browser_runtime_bind',
+        runtimeId: filtered[3],
+        windowHandle: parsedWindowHandle !== undefined && !Number.isNaN(parsedWindowHandle) ? parsedWindowHandle : undefined,
+        json
+      };
+    }
+    if ((value === 'open-tab' || value === 'tab-open') && filtered[3]) {
+      return {
+        kind: 'browser_runtime_open_tab',
+        runtimeId: filtered[3],
+        url: filtered[4] && !filtered[4].startsWith('--') ? filtered[4] : readFlagValue(filtered, '--url'),
+        json
+      };
+    }
+    if (value === 'tile') {
+      const runtimeIds = readFlagValues(filtered, '--runtime');
+      const columnsRaw = readFlagValue(filtered, '--columns');
+      const gapRaw = readFlagValue(filtered, '--gap');
+      const xRaw = readFlagValue(filtered, '--x');
+      const yRaw = readFlagValue(filtered, '--y');
+      const widthRaw = readFlagValue(filtered, '--width');
+      const heightRaw = readFlagValue(filtered, '--height');
+      const presetRaw = readFlagValue(filtered, '--preset');
+      const preset = presetRaw === '2-up' || presetRaw === '3-column' || presetRaw === '2x2' || presetRaw === 'main-left' || presetRaw === 'main-right' || presetRaw === 'newsroom-5' || presetRaw === 'newsroom-6'
+        ? presetRaw
+        : undefined;
+      const x = xRaw ? Number.parseInt(xRaw, 10) : undefined;
+      const y = yRaw ? Number.parseInt(yRaw, 10) : undefined;
+      const width = widthRaw ? Number.parseInt(widthRaw, 10) : undefined;
+      const height = heightRaw ? Number.parseInt(heightRaw, 10) : undefined;
+      return {
+        kind: 'browser_runtime_tile',
+        runtimeIds: runtimeIds.length ? runtimeIds : undefined,
+        preset,
+        columns: columnsRaw ? Number.parseInt(columnsRaw, 10) : undefined,
+        gap: gapRaw ? Number.parseInt(gapRaw, 10) : undefined,
+        area: [x, y, width, height].every((entry) => typeof entry === 'number' && !Number.isNaN(entry))
+          ? { x: x!, y: y!, width: width!, height: height! }
+          : undefined,
+        json
+      };
     }
     if (value === 'close' && filtered[3]) {
       return { kind: 'browser_runtime_close', runtimeId: filtered[3], json };
@@ -5765,6 +6104,588 @@ export function parseOperatorCommand(argv: string[]): OperatorCommand {
         automationMode: automationMode === 'debuggable' || automationMode === 'persistent-debuggable' ? automationMode : undefined,
         debugPort: parsedDebugPort !== undefined && !Number.isNaN(parsedDebugPort) ? parsedDebugPort : undefined,
         ownerSessionId: readFlagValue(filtered, '--owner-session'),
+        json
+      };
+    }
+  }
+
+  if (domain === 'browser' && action === 'page') {
+    const queryKindRaw = readFlagValue(filtered, '--kind');
+    const queryKind = queryKindRaw === 'field' || queryKindRaw === 'button' || queryKindRaw === 'link' || queryKindRaw === 'any'
+      ? queryKindRaw
+      : undefined;
+    if (value === 'dom' && filtered[3]) {
+      return {
+        kind: 'browser_page_dom',
+        pageId: filtered[3],
+        json
+      };
+    }
+    if (value === 'fill-commit' && filtered[3] && filtered[4] && filtered[5]) {
+      return {
+        kind: 'browser_page_fill_commit',
+        pageId: filtered[3],
+        selector: filtered[4],
+        value: filtered[5],
+        json
+      };
+    }
+    if (value === 'wait-ready' && filtered[3]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const stableRaw = readFlagValue(filtered, '--stable-reads');
+      const parsedStable = stableRaw ? Number.parseInt(stableRaw, 10) : undefined;
+      const selectors = readFlagValues(filtered, '--selector');
+      if (selectors.length === 0) {
+        throw new Error('browser page wait-ready requires at least one --selector <selector>');
+      }
+      return {
+        kind: 'browser_page_wait_ready',
+        pageId: filtered[3],
+        selectors,
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        stableReads: parsedStable !== undefined && !Number.isNaN(parsedStable) ? parsedStable : undefined,
+        json
+      };
+    }
+    if (value === 'click-text' && filtered[3] && filtered[4]) {
+      const settleAfterRaw = readFlagValue(filtered, '--settle-after');
+      const settleAfter = settleAfterRaw === 'dom' || settleAfterRaw === 'page' || settleAfterRaw === 'network' ? settleAfterRaw : undefined;
+      const settleTimeoutRaw = readFlagValue(filtered, '--settle-timeout-ms');
+      const parsedSettleTimeout = settleTimeoutRaw ? Number.parseInt(settleTimeoutRaw, 10) : undefined;
+      const settleStableRaw = readFlagValue(filtered, '--settle-stable-reads');
+      const parsedSettleStable = settleStableRaw ? Number.parseInt(settleStableRaw, 10) : undefined;
+      const topMaxRaw = readFlagValue(filtered, '--top-max');
+      const parsedTopMax = topMaxRaw ? Number.parseInt(topMaxRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_click_text',
+        pageId: filtered[3],
+        text: filtered[4],
+        exact: !filtered.includes('--contains'),
+        withinSelector: readFlagValue(filtered, '--within'),
+        topRegionOnly: filtered.includes('--top-region'),
+        topRegionMax: parsedTopMax !== undefined && !Number.isNaN(parsedTopMax) ? parsedTopMax : undefined,
+        allowLinks: !filtered.includes('--no-links'),
+        settleAfter,
+        settleTimeoutMs: parsedSettleTimeout !== undefined && !Number.isNaN(parsedSettleTimeout) ? parsedSettleTimeout : undefined,
+        settleStableReads: parsedSettleStable !== undefined && !Number.isNaN(parsedSettleStable) ? parsedSettleStable : undefined,
+        json
+      };
+    }
+    if (value === 'check-agreement' && filtered[3]) {
+      return {
+        kind: 'browser_page_check_agreement',
+        pageId: filtered[3],
+        selector: readFlagValue(filtered, '--selector'),
+        labelTextIncludes: readFlagValues(filtered, '--label'),
+        json
+      };
+    }
+    if (value === 'settle' && filtered[3] && filtered[4]) {
+      const mode = filtered[4] === 'dom' || filtered[4] === 'page' || filtered[4] === 'network' ? filtered[4] : undefined;
+      if (mode) {
+        const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+        const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+        const intervalRaw = readFlagValue(filtered, '--interval-ms');
+        const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+        const stableRaw = readFlagValue(filtered, '--stable-reads');
+        const parsedStable = stableRaw ? Number.parseInt(stableRaw, 10) : undefined;
+        const quietRaw = readFlagValue(filtered, '--quiet-ms');
+        const parsedQuiet = quietRaw ? Number.parseInt(quietRaw, 10) : undefined;
+        return {
+          kind: 'browser_page_settle',
+          pageId: filtered[3],
+          mode,
+          timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+          intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+          stableReads: parsedStable !== undefined && !Number.isNaN(parsedStable) ? parsedStable : undefined,
+          quietMs: parsedQuiet !== undefined && !Number.isNaN(parsedQuiet) ? parsedQuiet : undefined,
+          json
+        };
+      }
+    }
+    if (value === 'complete-profile' && filtered[3]) {
+      const email = readFlagValue(filtered, '--email');
+      if (!email) {
+        throw new Error('browser page complete-profile requires --email <value>');
+      }
+      const waitReadyTimeoutRaw = readFlagValue(filtered, '--wait-ready-timeout-ms');
+      const parsedWaitReadyTimeout = waitReadyTimeoutRaw ? Number.parseInt(waitReadyTimeoutRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_complete_profile',
+        pageId: filtered[3],
+        email,
+        username: readFlagValue(filtered, '--username'),
+        fullName: readFlagValue(filtered, '--full-name'),
+        usernameSelector: readFlagValue(filtered, '--username-selector'),
+        fullNameSelector: readFlagValue(filtered, '--full-name-selector'),
+        agreementSelector: readFlagValue(filtered, '--agreement-selector'),
+        agreementTextIncludes: readFlagValues(filtered, '--agreement-label'),
+        submitText: readFlagValue(filtered, '--submit-text'),
+        waitReadyTimeoutMs: parsedWaitReadyTimeout !== undefined && !Number.isNaN(parsedWaitReadyTimeout) ? parsedWaitReadyTimeout : undefined,
+        json
+      };
+    }
+    if (value === 'signup-step' && filtered[3]) {
+      const email = readFlagValue(filtered, '--email');
+      const password = readFlagValue(filtered, '--password');
+      if (!email) {
+        throw new Error('browser page signup-step requires --email <value>');
+      }
+      if (!password) {
+        throw new Error('browser page signup-step requires --password <value>');
+      }
+      const waitReadyTimeoutRaw = readFlagValue(filtered, '--wait-ready-timeout-ms');
+      const parsedWaitReadyTimeout = waitReadyTimeoutRaw ? Number.parseInt(waitReadyTimeoutRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_signup_step',
+        pageId: filtered[3],
+        email,
+        password,
+        emailSelector: readFlagValue(filtered, '--email-selector'),
+        passwordSelector: readFlagValue(filtered, '--password-selector'),
+        submitText: readFlagValue(filtered, '--submit-text'),
+        waitReadyTimeoutMs: parsedWaitReadyTimeout !== undefined && !Number.isNaN(parsedWaitReadyTimeout) ? parsedWaitReadyTimeout : undefined,
+        json
+      };
+    }
+    if (value === 'profile') {
+      const subAction = filtered[3];
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      if (subAction === 'list') {
+        return {
+          kind: 'browser_page_profile_list',
+          profileFile: readFlagValue(filtered, '--file'),
+          json
+        };
+      }
+      if (subAction === 'info' && filtered[4]) {
+        return {
+          kind: 'browser_page_profile_info',
+          profileId: filtered[4],
+          profileFile: readFlagValue(filtered, '--file'),
+          json
+        };
+      }
+      if ((subAction === 'login' || subAction === 'signup') && filtered[4] && filtered[5]) {
+        return {
+          kind: subAction === 'login' ? 'browser_page_profile_login' : 'browser_page_profile_signup',
+          runtimeId: filtered[4],
+          profileId: filtered[5],
+          profileFile: readFlagValue(filtered, '--file'),
+          url: readFlagValue(filtered, '--url'),
+          email: readFlagValue(filtered, '--email'),
+          username: readFlagValue(filtered, '--username'),
+          password: readFlagValue(filtered, '--password'),
+          confirmPassword: readFlagValue(filtered, '--confirm-password'),
+          fullName: readFlagValue(filtered, '--full-name'),
+          exact: filtered.includes('--exact'),
+          formSelector: readFlagValue(filtered, '--form'),
+          rootSelector: readFlagValue(filtered, '--root'),
+          timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+          intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+          json
+        };
+      }
+    }
+    if (value === 'list') {
+      return {
+        kind: 'browser_page_list',
+        runtimeId: readFlagValue(filtered, '--runtime'),
+        json
+      };
+    }
+    if (value === 'open' && filtered[3]) {
+      return {
+        kind: 'browser_page_open',
+        runtimeId: filtered[3],
+        url: filtered[4] && !filtered[4].startsWith('--') ? filtered[4] : readFlagValue(filtered, '--url'),
+        json
+      };
+    }
+    if (value === 'info' && filtered[3]) {
+      return {
+        kind: 'browser_page_info',
+        pageId: filtered[3],
+        json
+      };
+    }
+    if (value === 'locate' && filtered[3] && filtered[4]) {
+      const limitRaw = readFlagValue(filtered, '--limit');
+      const parsedLimit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_locate',
+        pageId: filtered[3],
+        query: filtered[4],
+        queryKind,
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        limit: parsedLimit !== undefined && !Number.isNaN(parsedLimit) ? parsedLimit : undefined,
+        json
+      };
+    }
+    if (value === 'fill-query' && filtered[3] && filtered[4] && filtered[5]) {
+      return {
+        kind: 'browser_page_fill_query',
+        pageId: filtered[3],
+        query: filtered[4],
+        value: filtered[5],
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'click-query' && filtered[3] && filtered[4]) {
+      return {
+        kind: 'browser_page_click_query',
+        pageId: filtered[3],
+        query: filtered[4],
+        queryKind,
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'submit' && filtered[3]) {
+      const query = filtered[4] && !filtered[4].startsWith('--')
+        ? filtered[4]
+        : readFlagValue(filtered, '--query');
+      return {
+        kind: 'browser_page_submit',
+        pageId: filtered[3],
+        query,
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'scroll' && filtered[3] && filtered[4]) {
+      const direction = filtered[4] === 'up' || filtered[4] === 'down' || filtered[4] === 'top' || filtered[4] === 'bottom'
+        ? filtered[4]
+        : undefined;
+      if (direction) {
+        return {
+          kind: 'browser_page_scroll',
+          pageId: filtered[3],
+          direction,
+          query: filtered[5] && !filtered[5].startsWith('--') ? filtered[5] : readFlagValue(filtered, '--query'),
+          json
+        };
+      }
+    }
+    if (value === 'scroll-text' && filtered[3] && filtered[4]) {
+      const nthRaw = readFlagValue(filtered, '--nth');
+      const parsedNth = nthRaw ? Number.parseInt(nthRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_scroll_text',
+        pageId: filtered[3],
+        text: filtered[4],
+        nth: parsedNth !== undefined && !Number.isNaN(parsedNth) ? parsedNth : undefined,
+        json
+      };
+    }
+    if (value === 'send-keys' && filtered[3] && filtered[4]) {
+      return {
+        kind: 'browser_page_send_keys',
+        pageId: filtered[3],
+        keys: filtered[4],
+        query: readFlagValue(filtered, '--query'),
+        json
+      };
+    }
+    if (value === 'options' && filtered[3] && filtered[4]) {
+      return {
+        kind: 'browser_page_select_options',
+        pageId: filtered[3],
+        query: filtered[4],
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'select-option' && filtered[3] && filtered[4] && filtered[5]) {
+      return {
+        kind: 'browser_page_select_option',
+        pageId: filtered[3],
+        query: filtered[4],
+        text: filtered[5],
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'uploader' && filtered[3] && filtered[4]) {
+      return {
+        kind: 'browser_page_detect_file_uploader',
+        pageId: filtered[3],
+        query: filtered[4],
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        json
+      };
+    }
+    if (value === 'replay' && filtered[3]) {
+      const filePath = readFlagValue(filtered, '--file');
+      if (!filePath) {
+        throw new Error('browser page replay requires --file <path>');
+      }
+      return {
+        kind: 'browser_page_replay',
+        pageId: filtered[3],
+        filePath,
+        json
+      };
+    }
+    if (value === 'wait-text' && filtered[3] && filtered[4]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      return {
+        kind: 'browser_page_wait_text',
+        pageId: filtered[3],
+        text: filtered[4],
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'form-workflow' && filtered[3]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const fieldSpecs = readFlagValues(filtered, '--field');
+      const fields = fieldSpecs.map((spec) => {
+        const separatorIndex = spec.lastIndexOf('=');
+        if (separatorIndex <= 0) {
+          throw new Error(`Invalid --field value: ${spec}. Use --field "<query>=<value>"`);
+        }
+        return {
+          query: spec.slice(0, separatorIndex),
+          value: spec.slice(separatorIndex + 1)
+        };
+      });
+      return {
+        kind: 'browser_page_form_workflow',
+        pageId: filtered[3],
+        fields,
+        submit: filtered.includes('--submit'),
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'auth-login' && filtered[3]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const password = readFlagValue(filtered, '--password');
+      if (!password) {
+        throw new Error('browser page auth-login requires --password');
+      }
+      const email = readFlagValue(filtered, '--email');
+      const username = readFlagValue(filtered, '--username');
+      if (!email && !username) {
+        throw new Error('browser page auth-login requires --email or --username');
+      }
+      return {
+        kind: 'browser_page_auth_login',
+        pageId: filtered[3],
+        email,
+        username,
+        password,
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        skipSubmit: filtered.includes('--skip-submit'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'auth-signup' && filtered[3]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const password = readFlagValue(filtered, '--password');
+      if (!password) {
+        throw new Error('browser page auth-signup requires --password');
+      }
+      return {
+        kind: 'browser_page_auth_signup',
+        pageId: filtered[3],
+        fullName: readFlagValue(filtered, '--full-name'),
+        username: readFlagValue(filtered, '--username'),
+        email: readFlagValue(filtered, '--email'),
+        password,
+        confirmPassword: readFlagValue(filtered, '--confirm-password'),
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        skipSubmit: filtered.includes('--skip-submit'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'open-workflow' && filtered[3] && filtered[4]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const fieldSpecs = readFlagValues(filtered, '--field');
+      const fields = fieldSpecs.map((spec) => {
+        const separatorIndex = spec.lastIndexOf('=');
+        if (separatorIndex <= 0) {
+          throw new Error(`Invalid --field value: ${spec}. Use --field "<query>=<value>"`);
+        }
+        return {
+          query: spec.slice(0, separatorIndex),
+          value: spec.slice(separatorIndex + 1)
+        };
+      });
+      return {
+        kind: 'browser_page_open_workflow',
+        runtimeId: filtered[3],
+        url: filtered[4],
+        fields,
+        submit: filtered.includes('--submit'),
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'open-and-login' && filtered[3] && filtered[4]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const password = readFlagValue(filtered, '--password');
+      if (!password) {
+        throw new Error('browser page open-and-login requires --password');
+      }
+      const email = readFlagValue(filtered, '--email');
+      const username = readFlagValue(filtered, '--username');
+      if (!email && !username) {
+        throw new Error('browser page open-and-login requires --email or --username');
+      }
+      return {
+        kind: 'browser_page_open_and_login',
+        runtimeId: filtered[3],
+        url: filtered[4],
+        email,
+        username,
+        password,
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        skipSubmit: filtered.includes('--skip-submit'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'open-and-signup' && filtered[3] && filtered[4]) {
+      const timeoutRaw = readFlagValue(filtered, '--timeout-ms');
+      const parsedTimeout = timeoutRaw ? Number.parseInt(timeoutRaw, 10) : undefined;
+      const intervalRaw = readFlagValue(filtered, '--interval-ms');
+      const parsedInterval = intervalRaw ? Number.parseInt(intervalRaw, 10) : undefined;
+      const password = readFlagValue(filtered, '--password');
+      if (!password) {
+        throw new Error('browser page open-and-signup requires --password');
+      }
+      return {
+        kind: 'browser_page_open_and_signup',
+        runtimeId: filtered[3],
+        url: filtered[4],
+        fullName: readFlagValue(filtered, '--full-name'),
+        username: readFlagValue(filtered, '--username'),
+        email: readFlagValue(filtered, '--email'),
+        password,
+        confirmPassword: readFlagValue(filtered, '--confirm-password'),
+        submitQuery: readFlagValue(filtered, '--submit-query'),
+        skipSubmit: filtered.includes('--skip-submit'),
+        exact: filtered.includes('--exact'),
+        formSelector: readFlagValue(filtered, '--form'),
+        rootSelector: readFlagValue(filtered, '--root'),
+        waitUrlIncludes: readFlagValue(filtered, '--wait-url-includes'),
+        waitText: readFlagValue(filtered, '--wait-text'),
+        waitSelector: readFlagValue(filtered, '--wait-selector'),
+        waitNoSelector: readFlagValue(filtered, '--wait-no-selector'),
+        timeoutMs: parsedTimeout !== undefined && !Number.isNaN(parsedTimeout) ? parsedTimeout : undefined,
+        intervalMs: parsedInterval !== undefined && !Number.isNaN(parsedInterval) ? parsedInterval : undefined,
+        json
+      };
+    }
+    if (value === 'close' && filtered[3]) {
+      return {
+        kind: 'browser_page_close',
+        pageId: filtered[3],
+        json
+      };
+    }
+  }
+
+  if (domain === 'browser' && action === 'agent') {
+    if (value === 'run' && filtered[3]) {
+      const filePath = readFlagValue(filtered, '--file');
+      if (!filePath) {
+        throw new Error('browser agent run requires --file <path>');
+      }
+      return {
+        kind: 'browser_agent_run',
+        runtimeId: filtered[3],
+        filePath,
+        url: readFlagValue(filtered, '--url'),
+        goal: readFlagValue(filtered, '--goal'),
+        trajectoryId: readFlagValue(filtered, '--trajectory'),
         json
       };
     }

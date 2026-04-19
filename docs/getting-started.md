@@ -98,7 +98,7 @@ Browser-extension support is available, but it should still be treated as alpha:
 ```powershell
 bun run cli -- browserext status --json
 bun run cli -- browserext capabilities --json
-bun run cli -- browserext workflow-validate --file examples/browserext-workflows/huggingface-join-start.workflow.json --json
+bun run cli -- browserext workflow-validate --file examples/browserext-fixtures/control-workflow.json --json
 ```
 
 ## Next Reading

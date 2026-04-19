@@ -392,8 +392,490 @@ async function main() {
         printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
         break;
       }
+      case 'browser_policy_get': {
+        const result = await daemonCommand('browser_policy_get');
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_policy_set': {
+        const result = await daemonCommand('browser_policy_set', {
+          enabled: command.enabled,
+          allowList: command.allowList,
+          denyList: command.denyList
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_runtime_windows': {
+        const result = await daemonCommand('browser_runtime_windows', { runtimeIds: command.runtimeIds });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_runtime_bind': {
+        const result = await daemonCommand('browser_runtime_bind', {
+          runtimeId: command.runtimeId,
+          windowHandle: command.windowHandle
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_runtime_open_tab': {
+        const result = await daemonCommand('browser_runtime_open_tab', {
+          runtimeId: command.runtimeId,
+          url: command.url
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_runtime_tile': {
+        const result = await daemonCommand('browser_runtime_tile', {
+          runtimeIds: command.runtimeIds,
+          preset: command.preset,
+          columns: command.columns,
+          gap: command.gap,
+          area: command.area
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
       case 'browser_runtime_close': {
         const result = await daemonCommand('browser_runtime_close', { runtimeId: command.runtimeId });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_list': {
+        const result = await daemonCommand('browser_page_list', { runtimeId: command.runtimeId });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_open': {
+        const result = await daemonCommand('browser_page_open', {
+          runtimeId: command.runtimeId,
+          url: command.url
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_info': {
+        const result = await daemonCommand('browser_page_info', { pageId: command.pageId });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_locate': {
+        const result = await daemonCommand('browser_page_locate', {
+          pageId: command.pageId,
+          query: command.query,
+          kind: command.queryKind,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          limit: command.limit
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_fill_query': {
+        const result = await daemonCommand('browser_page_fill_query', {
+          pageId: command.pageId,
+          query: command.query,
+          value: command.value,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_click_query': {
+        const result = await daemonCommand('browser_page_click_query', {
+          pageId: command.pageId,
+          query: command.query,
+          kind: command.queryKind,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_submit': {
+        const result = await daemonCommand('browser_page_submit', {
+          pageId: command.pageId,
+          query: command.query,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_wait_text': {
+        const result = await daemonCommand('browser_page_wait_text', {
+          pageId: command.pageId,
+          text: command.text,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_form_workflow': {
+        const result = await daemonCommand('browser_page_form_workflow', {
+          pageId: command.pageId,
+          fields: command.fields,
+          submit: command.submit,
+          submitQuery: command.submitQuery,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_auth_login': {
+        const result = await daemonCommand('browser_page_auth_login', {
+          pageId: command.pageId,
+          email: command.email,
+          username: command.username,
+          password: command.password,
+          submitQuery: command.submitQuery,
+          skipSubmit: command.skipSubmit,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_auth_signup': {
+        const result = await daemonCommand('browser_page_auth_signup', {
+          pageId: command.pageId,
+          fullName: command.fullName,
+          username: command.username,
+          email: command.email,
+          password: command.password,
+          confirmPassword: command.confirmPassword,
+          submitQuery: command.submitQuery,
+          skipSubmit: command.skipSubmit,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_open_workflow': {
+        const result = await daemonCommand('browser_page_open_workflow', {
+          runtimeId: command.runtimeId,
+          url: command.url,
+          fields: command.fields,
+          submit: command.submit,
+          submitQuery: command.submitQuery,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_open_and_login': {
+        const result = await daemonCommand('browser_page_open_and_login', {
+          runtimeId: command.runtimeId,
+          url: command.url,
+          email: command.email,
+          username: command.username,
+          password: command.password,
+          submitQuery: command.submitQuery,
+          skipSubmit: command.skipSubmit,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_open_and_signup': {
+        const result = await daemonCommand('browser_page_open_and_signup', {
+          runtimeId: command.runtimeId,
+          url: command.url,
+          fullName: command.fullName,
+          username: command.username,
+          email: command.email,
+          password: command.password,
+          confirmPassword: command.confirmPassword,
+          submitQuery: command.submitQuery,
+          skipSubmit: command.skipSubmit,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          waitUrlIncludes: command.waitUrlIncludes,
+          waitText: command.waitText,
+          waitSelector: command.waitSelector,
+          waitNoSelector: command.waitNoSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_profile_list': {
+        const result = await daemonCommand('browser_page_profile_list', {
+          profileFile: command.profileFile
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_profile_info': {
+        const result = await daemonCommand('browser_page_profile_info', {
+          profileId: command.profileId,
+          profileFile: command.profileFile
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_profile_login': {
+        const result = await daemonCommand('browser_page_profile_login', {
+          runtimeId: command.runtimeId,
+          profileId: command.profileId,
+          profileFile: command.profileFile,
+          url: command.url,
+          email: command.email,
+          username: command.username,
+          password: command.password,
+          confirmPassword: command.confirmPassword,
+          fullName: command.fullName,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_profile_signup': {
+        const result = await daemonCommand('browser_page_profile_signup', {
+          runtimeId: command.runtimeId,
+          profileId: command.profileId,
+          profileFile: command.profileFile,
+          url: command.url,
+          email: command.email,
+          username: command.username,
+          password: command.password,
+          confirmPassword: command.confirmPassword,
+          fullName: command.fullName,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_dom': {
+        const result = await daemonCommand('browser_page_dom', { pageId: command.pageId });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_fill_commit': {
+        const result = await daemonCommand('browser_page_fill_commit', {
+          pageId: command.pageId,
+          selector: command.selector,
+          value: command.value
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_wait_ready': {
+        const result = await daemonCommand('browser_page_wait_ready', {
+          pageId: command.pageId,
+          selectors: command.selectors,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs,
+          stableReads: command.stableReads
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_click_text': {
+        const result = await daemonCommand('browser_page_click_text', {
+          pageId: command.pageId,
+          text: command.text,
+          exact: command.exact,
+          withinSelector: command.withinSelector,
+          topRegionOnly: command.topRegionOnly,
+          topRegionMax: command.topRegionMax,
+          allowLinks: command.allowLinks,
+          settleAfter: command.settleAfter,
+          settleTimeoutMs: command.settleTimeoutMs,
+          settleStableReads: command.settleStableReads
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_check_agreement': {
+        const result = await daemonCommand('browser_page_check_agreement', {
+          pageId: command.pageId,
+          selector: command.selector,
+          labelTextIncludes: command.labelTextIncludes
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_settle': {
+        const result = await daemonCommand('browser_page_settle', {
+          pageId: command.pageId,
+          mode: command.mode,
+          timeoutMs: command.timeoutMs,
+          intervalMs: command.intervalMs,
+          stableReads: command.stableReads,
+          quietMs: command.quietMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_complete_profile': {
+        const result = await daemonCommand('browser_page_complete_profile', {
+          pageId: command.pageId,
+          email: command.email,
+          username: command.username,
+          fullName: command.fullName,
+          usernameSelector: command.usernameSelector,
+          fullNameSelector: command.fullNameSelector,
+          agreementSelector: command.agreementSelector,
+          agreementTextIncludes: command.agreementTextIncludes,
+          submitText: command.submitText,
+          waitReadyTimeoutMs: command.waitReadyTimeoutMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_signup_step': {
+        const result = await daemonCommand('browser_page_signup_step', {
+          pageId: command.pageId,
+          email: command.email,
+          password: command.password,
+          emailSelector: command.emailSelector,
+          passwordSelector: command.passwordSelector,
+          submitText: command.submitText,
+          waitReadyTimeoutMs: command.waitReadyTimeoutMs
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_scroll': {
+        const result = await daemonCommand('browser_page_scroll', {
+          pageId: command.pageId,
+          direction: command.direction,
+          query: command.query
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_scroll_text': {
+        const result = await daemonCommand('browser_page_scroll_text', {
+          pageId: command.pageId,
+          text: command.text,
+          nth: command.nth
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_send_keys': {
+        const result = await daemonCommand('browser_page_send_keys', {
+          pageId: command.pageId,
+          keys: command.keys,
+          query: command.query
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_select_options': {
+        const result = await daemonCommand('browser_page_select_options', {
+          pageId: command.pageId,
+          query: command.query,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_select_option': {
+        const result = await daemonCommand('browser_page_select_option', {
+          pageId: command.pageId,
+          query: command.query,
+          text: command.text,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_detect_file_uploader': {
+        const result = await daemonCommand('browser_page_detect_file_uploader', {
+          pageId: command.pageId,
+          query: command.query,
+          exact: command.exact,
+          formSelector: command.formSelector,
+          rootSelector: command.rootSelector
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_replay': {
+        const result = await daemonCommand('browser_page_replay', {
+          pageId: command.pageId,
+          filePath: command.filePath
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_agent_run': {
+        const result = await daemonCommand('browser_agent_run', {
+          runtimeId: command.runtimeId,
+          filePath: command.filePath,
+          url: command.url,
+          goal: command.goal,
+          trajectoryId: command.trajectoryId
+        });
+        printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
+        break;
+      }
+      case 'browser_page_close': {
+        const result = await daemonCommand('browser_page_close', { pageId: command.pageId });
         printResult(command.json ? result : JSON.stringify(result, null, 2), command.json);
         break;
       }

@@ -71,6 +71,11 @@ describe('computer interface', () => {
         getPage: async (pageId: string) => ({ id: pageId }),
         closePage: async (pageId: string) => ({ closed: pageId })
       } as any,
+      browserWindowLayoutService: {
+        listRuntimeWindows: (runtimeIds?: string[]) => [{ runtimeIds }],
+        bindRuntimeWindow: (runtimeId: string) => ({ runtimeId, matched: true }),
+        tileRuntimeWindows: async (options?: unknown) => ({ tiled: true, options })
+      } as any,
       desktopScopeService: {
         create: async (options: unknown) => ({ created: options }),
         list: async () => ({ scopes: [], count: 0 }),
@@ -118,6 +123,8 @@ describe('computer interface', () => {
       turn: { turnId: 'turn_1' }
     });
     expect(await computer.window.dragResize(1, 800, 600)).toEqual({ dragResized: [1, 800, 600] });
+    expect(await computer.browser.windows.bind('runtime_1')).toEqual({ runtimeId: 'runtime_1', matched: true });
+    expect(await computer.browser.windows.tile({ columns: 2 } as any)).toEqual({ tiled: true, options: { columns: 2 } });
 
     expect(calls).toEqual([
       {

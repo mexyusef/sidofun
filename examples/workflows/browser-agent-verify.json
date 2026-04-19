@@ -1,0 +1,12 @@
+{
+  "goal": "Verify browser agent execution on the XMail landing page.",
+  "steps": [
+    {
+      "goal": "Wait for the login affordance to exist and finish.",
+      "actions": [
+        { "kind": "wait_text", "text": "Login" },
+        { "kind": "done", "text": "Landing page verified." }
+      ]
+    }
+  ]
+}

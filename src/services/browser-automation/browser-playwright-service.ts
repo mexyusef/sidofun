@@ -22,9 +22,11 @@ import type {
   BrowserPageScreenshotResult,
   BrowserPageWaitResult,
 } from './types.js';
+import type { BrowserNavigationPolicyService } from '../browser-page-query/browser-navigation-policy-service.js';
 
 interface BrowserPlaywrightServiceOptions {
   automationService: Pick<BrowserAutomationService, 'getRuntime'>;
+  navigationPolicyService?: BrowserNavigationPolicyService;
   adapter?: PlaywrightAdapter;
   generateId?: () => string;
   now?: () => Date;
@@ -49,6 +51,7 @@ interface ManagedPage {
 export class BrowserPlaywrightService {
   private readonly automationService: Pick<BrowserAutomationService, 'getRuntime'>;
   private readonly adapter: PlaywrightAdapter;
+  private readonly navigationPolicyService?: BrowserNavigationPolicyService;
   private readonly generateId: () => string;
   private readonly now: () => Date;
   private readonly connections = new Map<string, RuntimeConnection>();
@@ -58,6 +61,7 @@ export class BrowserPlaywrightService {
 
   constructor(options: BrowserPlaywrightServiceOptions) {
     this.automationService = options.automationService;
+    this.navigationPolicyService = options.navigationPolicyService;
     this.adapter = options.adapter || new DefaultPlaywrightAdapter();
     this.generateId = options.generateId || (() => `browser_pg_${randomUUID()}`);
     this.now = options.now || (() => new Date());
@@ -160,6 +164,7 @@ export class BrowserPlaywrightService {
   }
 
   async openPage(runtimeId: string, url?: string): Promise<BrowserPageInfo> {
+    this.navigationPolicyService?.assertUrlAllowed(url);
     const runtime = this.automationService.getRuntime(runtimeId);
     if (!this.supportsPlaywright(runtime.browserId)) {
       throw new Error(`Playwright CDP attach is only supported for Chromium-family runtimes, not ${runtime.browserId}`);
@@ -233,6 +238,7 @@ export class BrowserPlaywrightService {
   }
 
   async navigate(pageId: string, url: string): Promise<BrowserPageActionResult> {
+    this.navigationPolicyService?.assertUrlAllowed(url);
     const managedPage = this.requireOpenPage(pageId);
     if (managedPage.kind === 'playwright') {
       await managedPage.page!.goto(url);
@@ -471,6 +477,7 @@ export class BrowserPlaywrightService {
   }
 
   async downloadUrl(pageId: string, url: string, targetPath: string): Promise<BrowserPageDownloadResult> {
+    this.navigationPolicyService?.assertUrlAllowed(url);
     const managedPage = this.requireOpenPage(pageId);
     if (managedPage.kind === 'playwright') {
       const response = await managedPage.page!.context().request.get(url);
@@ -930,9 +937,14 @@ export class BrowserPlaywrightService {
 
   private async connectWithRetry(endpointURL: string): Promise<Browser> {
     let lastError: unknown;
-    for (let attempt = 0; attempt < 10; attempt += 1) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
-        return await this.adapter.connectOverCDP(endpointURL);
+        return await Promise.race([
+          this.adapter.connectOverCDP(endpointURL),
+          new Promise<Browser>((_, reject) => {
+            setTimeout(() => reject(new Error(`Timed out connecting Playwright over CDP: ${endpointURL}`)), 1500);
+          })
+        ]);
       } catch (error) {
         lastError = error;
         await new Promise((resolve) => setTimeout(resolve, 500));

@@ -1,5 +1,7 @@
 import type { BrowserAutomationService } from '../browser-automation/browser-automation-service.js';
 import type { BrowserPlaywrightService } from '../browser-automation/browser-playwright-service.js';
+import type { BrowserPageQueryService } from '../browser-page-query/browser-page-query-service.js';
+import type { BrowserWindowLayoutService } from '../browser-window-layout/browser-window-layout-service.js';
 import type { BrowserExtensionService } from '../browser-extension/browser-extension-service.js';
 import type { BrowserService } from '../browser/browser-service.js';
 import type { ClipboardService } from '../clipboard/clipboard-service.js';
@@ -87,6 +89,17 @@ export interface SidofunComputerInterface {
       open: (runtimeId: string, url?: string) => ReturnType<BrowserPlaywrightService['openPage']>;
       info: (pageId: string) => ReturnType<BrowserPlaywrightService['getPage']>;
       close: (pageId: string) => ReturnType<BrowserPlaywrightService['closePage']>;
+      locate: (pageId: string, query: string, options?: Parameters<BrowserPageQueryService['locate']>[2]) => ReturnType<BrowserPageQueryService['locate']>;
+      fillQuery: (pageId: string, query: string, value: string, options?: Parameters<BrowserPageQueryService['fillQuery']>[3]) => ReturnType<BrowserPageQueryService['fillQuery']>;
+      clickQuery: (pageId: string, query: string, options?: Parameters<BrowserPageQueryService['clickQuery']>[2]) => ReturnType<BrowserPageQueryService['clickQuery']>;
+      submit: (pageId: string, options?: Parameters<BrowserPageQueryService['submit']>[1]) => ReturnType<BrowserPageQueryService['submit']>;
+      waitText: (pageId: string, text: string, options?: Parameters<BrowserPageQueryService['waitForText']>[2]) => ReturnType<BrowserPageQueryService['waitForText']>;
+      formWorkflow: (pageId: string, options: Parameters<BrowserPageQueryService['formWorkflow']>[1]) => ReturnType<BrowserPageQueryService['formWorkflow']>;
+    };
+    windows: {
+      list: (runtimeIds?: string[]) => ReturnType<BrowserWindowLayoutService['listRuntimeWindows']>;
+      bind: (runtimeId: string, windowHandle?: number) => ReturnType<BrowserWindowLayoutService['bindRuntimeWindow']>;
+      tile: (options?: Parameters<BrowserWindowLayoutService['tileRuntimeWindows']>[0]) => ReturnType<BrowserWindowLayoutService['tileRuntimeWindows']>;
     };
   };
   browserExtension: {
@@ -234,6 +247,8 @@ export function createComputerInterface(services: {
   browserExtensionService: BrowserExtensionService;
   browserAutomationService: BrowserAutomationService;
   browserPlaywrightService: BrowserPlaywrightService;
+  browserPageQueryService: BrowserPageQueryService;
+  browserWindowLayoutService: BrowserWindowLayoutService;
   desktopScopeService: DesktopScopeService;
   hfPapersService: HfPapersService;
   openCliService: OpenCliService;
@@ -313,7 +328,18 @@ export function createComputerInterface(services: {
         list: (runtimeId) => services.browserPlaywrightService.listPages(runtimeId),
         open: (runtimeId, url) => services.browserPlaywrightService.openPage(runtimeId, url),
         info: (pageId) => services.browserPlaywrightService.getPage(pageId),
-        close: (pageId) => services.browserPlaywrightService.closePage(pageId)
+        close: (pageId) => services.browserPlaywrightService.closePage(pageId),
+        locate: (pageId, query, options) => services.browserPageQueryService.locate(pageId, query, options),
+        fillQuery: (pageId, query, value, options) => services.browserPageQueryService.fillQuery(pageId, query, value, options),
+        clickQuery: (pageId, query, options) => services.browserPageQueryService.clickQuery(pageId, query, options),
+        submit: (pageId, options) => services.browserPageQueryService.submit(pageId, options),
+        waitText: (pageId, text, options) => services.browserPageQueryService.waitForText(pageId, text, options),
+        formWorkflow: (pageId, options) => services.browserPageQueryService.formWorkflow(pageId, options)
+      },
+      windows: {
+        list: (runtimeIds) => services.browserWindowLayoutService.listRuntimeWindows(runtimeIds),
+        bind: (runtimeId, windowHandle) => services.browserWindowLayoutService.bindRuntimeWindow(runtimeId, windowHandle),
+        tile: (options) => services.browserWindowLayoutService.tileRuntimeWindows(options)
       }
     },
     browserExtension: {

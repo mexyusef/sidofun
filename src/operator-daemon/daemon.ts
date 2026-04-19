@@ -1,6 +1,7 @@
 import { SIDOFUN_DAEMON_PIPE } from '../config/constants.js';
 import { OperatorService } from '../operator-cli/operator-service.js';
 import { DaemonStateStore } from './state-store.js';
+import fs from 'node:fs';
 import { createServer, type Server, type Socket } from 'node:net';
 import type {
   DaemonHealth,
@@ -20,7 +21,7 @@ import {
   serializePwshSession
 } from './types.js';
 
-const DAEMON_PROTOCOL_VERSION = 2;
+const DAEMON_PROTOCOL_VERSION = 3;
 const CMD_INITIAL_TYPE_MIN_DELAY_MS = 1500;
 const POWERSHELL_INITIAL_TYPE_MIN_DELAY_MS = 5000;
 
@@ -325,8 +326,444 @@ export class OperatorDaemon {
         return this.service.listBrowserRuntimes();
       case 'browser_runtime_info':
         return this.service.getBrowserRuntime(String(params.runtimeId));
+      case 'browser_runtime_windows':
+        return this.service.listBrowserRuntimeWindows(
+          Array.isArray(params.runtimeIds) && params.runtimeIds.length
+            ? params.runtimeIds.map((value) => String(value))
+            : undefined
+        );
+      case 'browser_runtime_bind': {
+        const result = this.service.bindBrowserRuntimeWindow(
+          String(params.runtimeId),
+          typeof params.windowHandle === 'number' ? params.windowHandle : undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_runtime_open_tab': {
+        const result = await this.service.openBrowserPage(
+          String(params.runtimeId),
+          typeof params.url === 'string' ? params.url : undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_runtime_tile':
+        return this.service.tileBrowserRuntimeWindows({
+          runtimeIds: Array.isArray(params.runtimeIds) && params.runtimeIds.length
+            ? params.runtimeIds.map((value) => String(value))
+            : undefined,
+          preset: params.preset as '2-up' | '3-column' | '2x2' | 'main-left' | 'main-right' | 'newsroom-5' | 'newsroom-6' | undefined,
+          columns: typeof params.columns === 'number' ? params.columns : undefined,
+          gap: typeof params.gap === 'number' ? params.gap : undefined,
+          area: typeof params.area === 'object' && params.area
+            ? {
+                x: Number((params.area as Record<string, unknown>).x),
+                y: Number((params.area as Record<string, unknown>).y),
+                width: Number((params.area as Record<string, unknown>).width),
+                height: Number((params.area as Record<string, unknown>).height)
+              }
+            : undefined
+        });
       case 'browser_runtime_close': {
         const result = await this.service.closeBrowserRuntime(String(params.runtimeId));
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_list':
+        return this.service.listBrowserPages(typeof params.runtimeId === 'string' ? params.runtimeId : undefined);
+      case 'browser_page_open': {
+        const result = await this.service.openBrowserPage(
+          String(params.runtimeId),
+          typeof params.url === 'string' ? params.url : undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_info':
+        return this.service.getBrowserPage(String(params.pageId));
+      case 'browser_page_locate':
+        return this.service.locateBrowserPage(String(params.pageId), String(params.query), {
+          kind: params.kind as 'field' | 'button' | 'link' | 'any' | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          limit: typeof params.limit === 'number' ? params.limit : undefined
+        });
+      case 'browser_page_fill_query': {
+        const result = await this.service.fillBrowserPageQuery(
+          String(params.pageId),
+          String(params.query),
+          String(params.value),
+          {
+            exact: params.exact === true,
+            formSelector: params.formSelector as string | undefined,
+            rootSelector: params.rootSelector as string | undefined
+          }
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_click_query': {
+        const result = await this.service.clickBrowserPageQuery(
+          String(params.pageId),
+          String(params.query),
+          {
+            kind: params.kind as 'field' | 'button' | 'link' | 'any' | undefined,
+            exact: params.exact === true,
+            formSelector: params.formSelector as string | undefined,
+            rootSelector: params.rootSelector as string | undefined
+          }
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_submit': {
+        const result = await this.service.submitBrowserPage(String(params.pageId), {
+          query: params.query as string | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_wait_text':
+        return this.service.waitForBrowserPageText(String(params.pageId), String(params.text), {
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+      case 'browser_page_form_workflow': {
+        const result = await this.service.formWorkflowBrowserPage(String(params.pageId), {
+          fields: Array.isArray(params.fields)
+            ? params.fields.map((field) => ({
+                query: String((field as Record<string, unknown>).query),
+                value: String((field as Record<string, unknown>).value)
+              }))
+            : [],
+          submit: params.submit === true,
+          submitQuery: params.submitQuery as string | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_auth_login': {
+        const result = await this.service.authLoginBrowserPage(String(params.pageId), {
+          email: params.email as string | undefined,
+          username: params.username as string | undefined,
+          password: String(params.password),
+          submitQuery: params.submitQuery as string | undefined,
+          skipSubmit: params.skipSubmit === true,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_auth_signup': {
+        const result = await this.service.authSignupBrowserPage(String(params.pageId), {
+          fullName: params.fullName as string | undefined,
+          username: params.username as string | undefined,
+          email: params.email as string | undefined,
+          password: String(params.password),
+          confirmPassword: params.confirmPassword as string | undefined,
+          submitQuery: params.submitQuery as string | undefined,
+          skipSubmit: params.skipSubmit === true,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_open_workflow': {
+        const result = await this.service.openWorkflowBrowserPage(String(params.runtimeId), {
+          url: String(params.url),
+          fields: Array.isArray(params.fields)
+            ? params.fields.map((field) => ({
+                query: String((field as Record<string, unknown>).query),
+                value: String((field as Record<string, unknown>).value)
+              }))
+            : [],
+          submit: params.submit === true,
+          submitQuery: params.submitQuery as string | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_open_and_login': {
+        const result = await this.service.openAndLoginBrowserPage(String(params.runtimeId), {
+          url: String(params.url),
+          email: params.email as string | undefined,
+          username: params.username as string | undefined,
+          password: String(params.password),
+          submitQuery: params.submitQuery as string | undefined,
+          skipSubmit: params.skipSubmit === true,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_open_and_signup': {
+        const result = await this.service.openAndSignupBrowserPage(String(params.runtimeId), {
+          url: String(params.url),
+          fullName: params.fullName as string | undefined,
+          username: params.username as string | undefined,
+          email: params.email as string | undefined,
+          password: String(params.password),
+          confirmPassword: params.confirmPassword as string | undefined,
+          submitQuery: params.submitQuery as string | undefined,
+          skipSubmit: params.skipSubmit === true,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          waitUrlIncludes: params.waitUrlIncludes as string | undefined,
+          waitText: params.waitText as string | undefined,
+          waitSelector: params.waitSelector as string | undefined,
+          waitNoSelector: params.waitNoSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_profile_list':
+        return this.service.listBrowserPageProfiles(params.profileFile as string | undefined);
+      case 'browser_page_profile_info':
+        return this.service.getBrowserPageProfile(String(params.profileId), params.profileFile as string | undefined);
+      case 'browser_policy_get':
+        return this.service.getBrowserNavigationPolicy();
+      case 'browser_policy_set':
+        return this.service.setBrowserNavigationPolicy({
+          enabled: typeof params.enabled === 'boolean' ? params.enabled : undefined,
+          allowList: Array.isArray(params.allowList) ? params.allowList.map((entry) => String(entry)) : undefined,
+          denyList: Array.isArray(params.denyList) ? params.denyList.map((entry) => String(entry)) : undefined
+        });
+      case 'browser_page_profile_login': {
+        const result = await this.service.loginBrowserPageProfile(String(params.runtimeId), String(params.profileId), {
+          profileFile: params.profileFile as string | undefined,
+          url: params.url as string | undefined,
+          email: params.email as string | undefined,
+          username: params.username as string | undefined,
+          password: params.password as string | undefined,
+          confirmPassword: params.confirmPassword as string | undefined,
+          fullName: params.fullName as string | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_profile_signup': {
+        const result = await this.service.signupBrowserPageProfile(String(params.runtimeId), String(params.profileId), {
+          profileFile: params.profileFile as string | undefined,
+          url: params.url as string | undefined,
+          email: params.email as string | undefined,
+          username: params.username as string | undefined,
+          password: params.password as string | undefined,
+          confirmPassword: params.confirmPassword as string | undefined,
+          fullName: params.fullName as string | undefined,
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined,
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_dom':
+        return this.service.snapshotBrowserPageDom(String(params.pageId));
+      case 'browser_page_fill_commit': {
+        const result = await this.service.fillCommitBrowserPage(String(params.pageId), String(params.selector), String(params.value));
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_wait_ready':
+        return this.service.waitReadyBrowserPage(String(params.pageId), (params.selectors as string[]) || [], {
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined,
+          stableReads: typeof params.stableReads === 'number' ? params.stableReads : undefined
+        });
+      case 'browser_page_click_text': {
+        const result = await this.service.clickTextBrowserPage(String(params.pageId), String(params.text), {
+          exact: params.exact !== false,
+          withinSelector: params.withinSelector as string | undefined,
+          topRegionOnly: params.topRegionOnly === true,
+          topRegionMax: typeof params.topRegionMax === 'number' ? params.topRegionMax : undefined,
+          allowLinks: params.allowLinks !== false,
+          settleAfter: params.settleAfter as 'dom' | 'page' | 'network' | undefined,
+          settleTimeoutMs: typeof params.settleTimeoutMs === 'number' ? params.settleTimeoutMs : undefined,
+          settleStableReads: typeof params.settleStableReads === 'number' ? params.settleStableReads : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_check_agreement': {
+        const result = await this.service.checkAgreementBrowserPage(String(params.pageId), {
+          selector: params.selector as string | undefined,
+          labelTextIncludes: params.labelTextIncludes as string[] | undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_settle':
+        return this.service.settleBrowserPage(String(params.pageId), params.mode as 'dom' | 'page' | 'network', {
+          timeoutMs: typeof params.timeoutMs === 'number' ? params.timeoutMs : undefined,
+          intervalMs: typeof params.intervalMs === 'number' ? params.intervalMs : undefined,
+          stableReads: typeof params.stableReads === 'number' ? params.stableReads : undefined,
+          quietMs: typeof params.quietMs === 'number' ? params.quietMs : undefined
+        });
+      case 'browser_page_complete_profile': {
+        const result = await this.service.completeProfileBrowserPage(String(params.pageId), {
+          email: String(params.email),
+          username: params.username as string | undefined,
+          fullName: params.fullName as string | undefined,
+          usernameSelector: params.usernameSelector as string | undefined,
+          fullNameSelector: params.fullNameSelector as string | undefined,
+          agreementSelector: params.agreementSelector as string | undefined,
+          agreementTextIncludes: params.agreementTextIncludes as string[] | undefined,
+          submitText: params.submitText as string | undefined,
+          waitReadyTimeoutMs: typeof params.waitReadyTimeoutMs === 'number' ? params.waitReadyTimeoutMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_signup_step': {
+        const result = await this.service.signupStepBrowserPage(String(params.pageId), {
+          email: String(params.email),
+          password: String(params.password),
+          emailSelector: params.emailSelector as string | undefined,
+          passwordSelector: params.passwordSelector as string | undefined,
+          submitText: params.submitText as string | undefined,
+          waitReadyTimeoutMs: typeof params.waitReadyTimeoutMs === 'number' ? params.waitReadyTimeoutMs : undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_scroll': {
+        const result = await this.service.scrollBrowserPage(
+          String(params.pageId),
+          params.direction as 'up' | 'down' | 'top' | 'bottom',
+          params.query as string | undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_scroll_text': {
+        const result = await this.service.scrollBrowserPageToText(
+          String(params.pageId),
+          String(params.text),
+          typeof params.nth === 'number' ? params.nth : undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_send_keys': {
+        const result = await this.service.sendKeysBrowserPage(
+          String(params.pageId),
+          String(params.keys),
+          params.query as string | undefined
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_select_options':
+        return this.service.getBrowserPageSelectOptions(String(params.pageId), String(params.query), {
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined
+        });
+      case 'browser_page_select_option': {
+        const result = await this.service.selectBrowserPageOption(String(params.pageId), String(params.query), String(params.text), {
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_detect_file_uploader':
+        return this.service.detectBrowserPageFileUploader(String(params.pageId), String(params.query), {
+          exact: params.exact === true,
+          formSelector: params.formSelector as string | undefined,
+          rootSelector: params.rootSelector as string | undefined
+        });
+      case 'browser_page_replay': {
+        const payload = JSON.parse(fs.readFileSync(String(params.filePath), 'utf8')) as { actions?: unknown[] };
+        const actions = Array.isArray(payload) ? payload : payload.actions;
+        if (!Array.isArray(actions)) {
+          throw new Error(`browser page replay file must be a JSON array or an object with an "actions" array: ${String(params.filePath)}`);
+        }
+        const result = await this.service.replayBrowserPage(
+          String(params.pageId),
+          actions.map((entry) => entry as import('../services/browser-automation/types.js').BrowserPageRecordedAction)
+        );
+        await this.persistState();
+        return result;
+      }
+      case 'browser_agent_run': {
+        const payload = JSON.parse(fs.readFileSync(String(params.filePath), 'utf8')) as {
+          goal?: string;
+          steps?: unknown[];
+        };
+        if (!Array.isArray(payload.steps)) {
+          throw new Error(`browser agent file must be a JSON object with a "steps" array: ${String(params.filePath)}`);
+        }
+        const result = await this.service.runBrowserAgent({
+          runtimeId: String(params.runtimeId),
+          url: params.url as string | undefined,
+          goal: (params.goal as string | undefined) ?? payload.goal,
+          trajectoryId: params.trajectoryId as string | undefined,
+          steps: payload.steps as import('../services/browser-automation/types.js').BrowserAgentPlanStep[]
+        });
+        await this.persistState();
+        return result;
+      }
+      case 'browser_page_close': {
+        const result = await this.service.closeBrowserPage(String(params.pageId));
         await this.persistState();
         return result;
       }

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "New York Times",
+    "url": "https://www.nytimes.com/"
+  },
+  {
+    "name": "SCMP",
+    "url": "https://www.scmp.com/"
+  },
+  {
+    "name": "Washington Post",
+    "url": "https://www.washingtonpost.com/"
+  },
+  {
+    "name": "Sydney Morning Herald",
+    "url": "https://www.smh.com.au/"
+  },
+  {
+    "name": "The Guardian",
+    "url": "https://www.theguardian.com/international"
+  }
+]

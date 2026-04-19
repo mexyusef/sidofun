@@ -8,6 +8,26 @@ export interface CdpPageHandle {
   sessionId: string;
 }
 
+export interface CdpClickTextOptions {
+  exact?: boolean;
+  withinSelector?: string;
+  topRegionOnly?: boolean;
+  topRegionMax?: number;
+  allowLinks?: boolean;
+}
+
+export interface CdpCheckboxOptions {
+  selector?: string;
+  labelTextIncludes?: string[];
+}
+
+export interface CdpSettleOptions {
+  timeoutMs?: number;
+  intervalMs?: number;
+  stableReads?: number;
+  quietMs?: number;
+}
+
 interface PendingRequest {
   resolve: (value: any) => void;
   reject: (error: Error) => void;
@@ -130,7 +150,7 @@ export class CdpConnection {
   }
 
   async createPage(url?: string): Promise<CdpPageHandle> {
-    const createResult = await this.send('Target.createTarget', { url: url || 'about:blank' });
+    const createResult = await this.send('Target.createTarget', { url: 'about:blank' });
     const targetId = createResult.targetId as string;
     const attachResult = await this.send('Target.attachToTarget', {
       targetId,
@@ -141,6 +161,7 @@ export class CdpConnection {
     await this.send('Runtime.enable', undefined, sessionId);
     await this.send('Network.enable', undefined, sessionId);
     if (url) {
+      await this.send('Page.navigate', { url }, sessionId);
       await this.waitForLoad(sessionId);
     }
     return { targetId, sessionId };
@@ -245,6 +266,180 @@ export class CdpConnection {
       })()
       `
     );
+  }
+
+  async fillCommit(handle: CdpPageHandle, selector: string, value: string): Promise<boolean> {
+    return await this.evaluate(handle, `
+      (() => {
+        const input = document.querySelector(${JSON.stringify(selector)});
+        if (!(input instanceof HTMLElement)) {
+          return false;
+        }
+        input.focus();
+        if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement || input instanceof HTMLSelectElement) {
+          const prototype = Object.getPrototypeOf(input);
+          const descriptor = prototype ? Object.getOwnPropertyDescriptor(prototype, 'value') : null;
+          if (descriptor && typeof descriptor.set === 'function') {
+            descriptor.set.call(input, ${JSON.stringify(value)});
+          } else {
+            input.value = ${JSON.stringify(value)};
+          }
+        } else if (input.getAttribute('contenteditable') === 'true') {
+          input.textContent = ${JSON.stringify(value)};
+        } else {
+          return false;
+        }
+        input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: ${JSON.stringify(value)} }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.dispatchEvent(new Event('blur', { bubbles: true }));
+        const currentValue =
+          input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement || input instanceof HTMLSelectElement
+            ? input.value
+            : input.textContent || '';
+        return currentValue === ${JSON.stringify(value)};
+      })()
+    `) === true;
+  }
+
+  async waitSelectors(
+    handle: CdpPageHandle,
+    selectors: string[],
+    timeoutMs = 10000,
+    stableReads = 1,
+    intervalMs = 250
+  ): Promise<boolean> {
+    const started = Date.now();
+    let consecutiveMatches = 0;
+    while (Date.now() - started < timeoutMs) {
+      const ready = await this.evaluate(
+        handle,
+        `(() => ${JSON.stringify(selectors)}.every((selector) => Boolean(document.querySelector(selector))))()`
+      );
+      if (ready === true) {
+        consecutiveMatches += 1;
+        if (consecutiveMatches >= Math.max(1, stableReads)) {
+          return true;
+        }
+      } else {
+        consecutiveMatches = 0;
+      }
+      await this.delay(intervalMs);
+    }
+    return false;
+  }
+
+  async clickText(handle: CdpPageHandle, text: string, options: CdpClickTextOptions = {}): Promise<boolean> {
+    return await this.evaluate(
+      handle,
+      `
+      (() => {
+        const normalize = (value) => String(value || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+        const exact = ${options.exact !== false};
+        const allowLinks = ${options.allowLinks !== false};
+        const topRegionOnly = ${options.topRegionOnly === true};
+        const topRegionMax = ${Math.max(0, options.topRegionMax ?? 140)};
+        const root = ${options.withinSelector ? `document.querySelector(${JSON.stringify(options.withinSelector)})` : 'document'};
+        if (!root) {
+          return false;
+        }
+        const selector = allowLinks ? 'button, a, [role="button"], input[type="submit"], input[type="button"]' : 'button, [role="button"], input[type="submit"], input[type="button"]';
+        const candidates = Array.from(root.querySelectorAll(selector));
+        const target = candidates.find((node) => {
+          if (!(node instanceof HTMLElement)) {
+            return false;
+          }
+          const nodeText = normalize(node.textContent || node.getAttribute('value') || node.getAttribute('aria-label') || '');
+          if (exact ? nodeText !== normalize(${JSON.stringify(text)}) : !nodeText.includes(normalize(${JSON.stringify(text)}))) {
+            return false;
+          }
+          const rect = node.getBoundingClientRect();
+          const visible = rect.width > 0 && rect.height > 0;
+          const disabled = node.hasAttribute('disabled') || node.getAttribute('aria-disabled') === 'true';
+          if (!visible || disabled) {
+            return false;
+          }
+          if (topRegionOnly && rect.top > topRegionMax) {
+            return false;
+          }
+          return true;
+        });
+        if (!target) {
+          return false;
+        }
+        target.click();
+        return true;
+      })()
+      `
+    ) === true;
+  }
+
+  async checkCheckbox(handle: CdpPageHandle, options: CdpCheckboxOptions = {}): Promise<boolean> {
+    return await this.evaluate(
+      handle,
+      `
+      (() => {
+        const hints = ${JSON.stringify((options.labelTextIncludes || []).map((entry) => entry.toLowerCase()))};
+        let input = null;
+        if (${Boolean(options.selector)}) {
+          const candidate = document.querySelector(${JSON.stringify(options.selector || '')});
+          if (candidate instanceof HTMLInputElement && candidate.type === 'checkbox') {
+            input = candidate;
+          }
+        }
+        if (!input) {
+          const candidates = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+          input = candidates.find((node) => {
+            const label = node.closest('label');
+            const nearby = (label?.textContent || node.parentElement?.textContent || '').toLowerCase();
+            if (hints.length === 0) {
+              return true;
+            }
+            return hints.some((hint) => nearby.includes(hint));
+          }) || null;
+        }
+        if (!(input instanceof HTMLInputElement)) {
+          return false;
+        }
+        if (!input.checked) {
+          input.click();
+        }
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return input.checked === true;
+      })()
+      `
+    ) === true;
+  }
+
+  async settle(handle: CdpPageHandle, mode: 'dom' | 'page' | 'network', options: CdpSettleOptions = {}): Promise<boolean> {
+    const timeoutMs = options.timeoutMs ?? 10000;
+    const intervalMs = options.intervalMs ?? 250;
+    const stableReads = Math.max(1, options.stableReads ?? 2);
+    if (mode === 'page') {
+      await this.waitForLoad(handle.sessionId, timeoutMs);
+    }
+    const started = Date.now();
+    let consecutiveStable = 0;
+    let previousSample = '';
+    while (Date.now() - started < timeoutMs) {
+      const sample = await this.evaluate(
+        handle,
+        mode === 'network'
+          ? `(() => JSON.stringify({ readyState: document.readyState, resources: performance.getEntriesByType('resource').length, href: location.href }))()`
+          : `(() => JSON.stringify({ readyState: document.readyState, title: document.title, textLength: (document.body?.innerText || '').length, nodeCount: document.querySelectorAll('*').length }))()`
+      );
+      const currentSample = typeof sample === 'string' ? sample : JSON.stringify(sample);
+      if (currentSample === previousSample && currentSample.length > 0) {
+        consecutiveStable += 1;
+        if (consecutiveStable >= stableReads) {
+          return true;
+        }
+      } else {
+        previousSample = currentSample;
+        consecutiveStable = 0;
+      }
+      await this.delay(Math.max(intervalMs, options.quietMs ?? 0));
+    }
+    return false;
   }
 
   async press(handle: CdpPageHandle, selector: string, key: string): Promise<void> {

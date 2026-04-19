@@ -6,13 +6,16 @@ import path from 'node:path';
 import type { BrowserService } from '../browser/browser-service.js';
 import type { BrowserLaunchResult } from '../browser/types.js';
 import type {
+  BrowserNavigationPolicy,
   BrowserRuntimeCloseResult,
   BrowserRuntimeCreateOptions,
   BrowserRuntimeInfo
 } from './types.js';
+import type { BrowserNavigationPolicyService } from '../browser-page-query/browser-navigation-policy-service.js';
 
 interface BrowserAutomationServiceOptions {
   browserService: Pick<BrowserService, 'launchBrowser'>;
+  navigationPolicyService?: BrowserNavigationPolicyService;
   closeProcess?: (pid: number) => void;
   generateId?: () => string;
   now?: () => Date;
@@ -23,6 +26,7 @@ interface BrowserAutomationServiceOptions {
 export class BrowserAutomationService {
   private readonly browserService: Pick<BrowserService, 'launchBrowser'>;
   private readonly closeProcess: (pid: number) => void;
+  private readonly navigationPolicyService?: BrowserNavigationPolicyService;
   private readonly generateId: () => string;
   private readonly now: () => Date;
   private readonly allocatePort: () => number;
@@ -32,6 +36,7 @@ export class BrowserAutomationService {
 
   constructor(options: BrowserAutomationServiceOptions) {
     this.browserService = options.browserService;
+    this.navigationPolicyService = options.navigationPolicyService;
     this.closeProcess = options.closeProcess || this.defaultCloseProcess;
     this.generateId = options.generateId || (() => `browser_rt_${randomUUID()}`);
     this.now = options.now || (() => new Date());
@@ -40,6 +45,7 @@ export class BrowserAutomationService {
   }
 
   async createRuntime(options: BrowserRuntimeCreateOptions): Promise<BrowserRuntimeInfo> {
+    this.navigationPolicyService?.assertUrlAllowed(options.url);
     const automationMode = options.automationMode || 'debuggable';
     const debugPort = options.debugPort || this.allocatePort();
     const tempUserDataDir = this.createTempUserDataDir(options.browserId, automationMode, options.profile, options.profilePath);
@@ -159,6 +165,21 @@ export class BrowserAutomationService {
     }
   }
 
+  getNavigationPolicy(): BrowserNavigationPolicy {
+    return this.navigationPolicyService?.getPolicy() ?? {
+      enabled: false,
+      allowList: [],
+      denyList: []
+    };
+  }
+
+  setNavigationPolicy(next: Partial<BrowserNavigationPolicy>): BrowserNavigationPolicy {
+    if (!this.navigationPolicyService) {
+      throw new Error('Browser navigation policy service is not available');
+    }
+    return this.navigationPolicyService.setPolicy(next);
+  }
+
   private buildRuntimeInfo(
     launchResult: BrowserLaunchResult,
     base: {
@@ -216,7 +237,18 @@ export class BrowserAutomationService {
       return undefined;
     }
 
-    return fs.mkdtempSync(path.join(os.tmpdir(), `sidofun-${browserId}-rt-`));
+    const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), `sidofun-${browserId}-rt-`));
+    this.prepareChromiumAutomationProfile(userDataDir);
+    return userDataDir;
+  }
+
+  private prepareChromiumAutomationProfile(userDataDir: string): void {
+    try {
+      fs.mkdirSync(path.join(userDataDir, 'Default'), { recursive: true });
+      fs.writeFileSync(path.join(userDataDir, 'First Run'), '', 'utf8');
+    } catch {
+      // Launch should still proceed even if temp profile seeding fails.
+    }
   }
 
   private async waitForDebugEndpoint(remoteDebuggingUrl: string): Promise<void> {

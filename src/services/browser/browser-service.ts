@@ -158,8 +158,18 @@ export class BrowserService {
       }
     }
 
+    const targetProcessNames = browserId
+      ? (this.getDefinition(browserId).processNames || []).map((processName) => processName.toLowerCase())
+      : [...processNameToBrowser.keys()];
+    if (targetProcessNames.length === 0) {
+      return [];
+    }
+
+    const processListLiteral = targetProcessNames
+      .map((processName) => `'${processName.replace(/'/g, "''")}'`)
+      .join(', ');
     const command = [
-      '$processes = Get-Process | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle };',
+      `$processes = Get-Process -Name @(${processListLiteral}) -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 -and $_.MainWindowTitle };`,
       '$result = foreach ($proc in $processes) {',
       '  [PSCustomObject]@{',
       '    pid = $proc.Id;',
@@ -173,7 +183,7 @@ export class BrowserService {
 
     const raw = execFileSync('powershell', ['-NoProfile', '-Command', command], {
       encoding: 'utf8',
-      timeout: 15000
+      timeout: 20000
     }).trim();
 
     if (!raw) {
@@ -523,6 +533,10 @@ export class BrowserService {
     if (definition.profileStrategy === 'chromium') {
       command.push(`--remote-debugging-port=${debugPort}`);
       command.push('--remote-debugging-address=127.0.0.1');
+      command.push('--no-first-run');
+      command.push('--no-default-browser-check');
+      command.push('--disable-default-apps');
+      command.push('--disable-sync');
       return;
     }
 

@@ -13,7 +13,16 @@ import {
   type BrowserAutomationAdapter
 } from '../services/browser/browser-automation-adapter.js';
 import { BrowserExtensionService } from '../services/browser-extension/browser-extension-service.js';
+import { BrowserAgentService } from '../services/browser-page-query/browser-agent-service.js';
+import { BrowserContentGuardrailsService } from '../services/browser-page-query/browser-content-guardrails-service.js';
+import { BrowserPageDomService } from '../services/browser-page-query/browser-page-dom-service.js';
+import { BrowserPageMacroService } from '../services/browser-page-query/browser-page-macro-service.js';
+import { BrowserNavigationPolicyService } from '../services/browser-page-query/browser-navigation-policy-service.js';
+import { BrowserPageProfileService } from '../services/browser-page-query/browser-page-profile-service.js';
+import { BrowserPageQueryService } from '../services/browser-page-query/browser-page-query-service.js';
+import { BrowserPageReplayService } from '../services/browser-page-query/browser-page-replay-service.js';
 import { BrowserService } from '../services/browser/browser-service.js';
+import { BrowserWindowLayoutService } from '../services/browser-window-layout/browser-window-layout-service.js';
 import { createComputerInterface, type SidofunComputerInterface } from '../services/computer/computer-interface.js';
 import { HfPapersService } from '../services/hf-papers/hf-papers-service.js';
 import { LocalCoderAppsService } from '../services/local-coder-apps/local-coder-apps-service.js';
@@ -47,6 +56,14 @@ export interface SidofunRuntime {
   browserExtensionService: BrowserExtensionService;
   browserAutomationService: BrowserAutomationService;
   browserPlaywrightService: BrowserPlaywrightService;
+  browserPageQueryService: BrowserPageQueryService;
+  browserPageMacroService: BrowserPageMacroService;
+  browserPageProfileService: BrowserPageProfileService;
+  browserPageDomService: BrowserPageDomService;
+  browserPageReplayService: BrowserPageReplayService;
+  browserContentGuardrailsService: BrowserContentGuardrailsService;
+  browserAgentService: BrowserAgentService;
+  browserWindowLayoutService: BrowserWindowLayoutService;
   browserAdapter: BrowserAutomationAdapter;
   computer: SidofunComputerInterface;
   localCoderAppsService: LocalCoderAppsService;
@@ -78,11 +95,63 @@ export function createSidofunRuntime(): SidofunRuntime {
   const terminalService = new TerminalService(cmdTerminalCore, psService);
   const browserService = new BrowserService();
   const browserExtensionService = new BrowserExtensionService();
+  const browserNavigationPolicyService = new BrowserNavigationPolicyService();
   const browserAutomationService = new BrowserAutomationService({
-    browserService
+    browserService,
+    navigationPolicyService: browserNavigationPolicyService
   });
   const browserPlaywrightService = new BrowserPlaywrightService({
-    automationService: browserAutomationService
+    automationService: browserAutomationService,
+    navigationPolicyService: browserNavigationPolicyService
+  });
+  const browserPageQueryService = new BrowserPageQueryService({
+    getPage: (pageId) => browserPlaywrightService.getPage(pageId),
+    evaluate: (pageId, expression) => browserPlaywrightService.evaluate(pageId, expression),
+    waitFor: (pageId, waitFor, query, timeoutMs) => browserPlaywrightService.waitFor(pageId, waitFor, query, timeoutMs)
+  });
+  const browserPageMacroService = new BrowserPageMacroService(browserPageQueryService, {
+    openPage: (runtimeId, url) => browserPlaywrightService.openPage(runtimeId, url),
+    getPage: (pageId) => browserPlaywrightService.getPage(pageId),
+    waitFor: (pageId, waitFor, query, timeoutMs) => browserPlaywrightService.waitFor(pageId, waitFor, query, timeoutMs)
+  });
+  const browserPageProfileService = new BrowserPageProfileService(
+    browserPageQueryService,
+    {
+      openPage: (runtimeId, url) => browserPlaywrightService.openPage(runtimeId, url),
+      getPage: (pageId) => browserPlaywrightService.getPage(pageId),
+      waitFor: (pageId, waitFor, query, timeoutMs) => browserPlaywrightService.waitFor(pageId, waitFor, query, timeoutMs)
+    }
+  );
+  const browserPageDomService = new BrowserPageDomService({
+    getPage: (pageId) => browserPlaywrightService.getPage(pageId),
+    evaluate: (pageId, expression) => browserPlaywrightService.evaluate(pageId, expression)
+  });
+  const browserContentGuardrailsService = new BrowserContentGuardrailsService();
+  const browserPageReplayService = new BrowserPageReplayService(
+    {
+      getPage: (pageId) => browserPlaywrightService.getPage(pageId),
+      openPage: (runtimeId, url) => browserPlaywrightService.openPage(runtimeId, url),
+      waitFor: (pageId, waitFor, query, timeoutMs) => browserPlaywrightService.waitFor(pageId, waitFor, query, timeoutMs)
+    },
+    {
+      queries: browserPageQueryService,
+      dom: browserPageDomService,
+      scroll: (pageId, direction, query) => browserPageQueryService.scroll(pageId, direction, query),
+      scrollToText: (pageId, text, nth) => browserPageQueryService.scrollToText(pageId, text, nth),
+      sendKeys: (pageId, keys, query) => browserPageQueryService.sendKeys(pageId, keys, query),
+      selectOption: (pageId, query, text, options) => browserPageQueryService.selectOption(pageId, query, text, options)
+    }
+  );
+  const browserAgentService = new BrowserAgentService(
+    browserPageReplayService,
+    browserContentGuardrailsService,
+    telemetryService
+  );
+  const browserWindowLayoutService = new BrowserWindowLayoutService({
+    browserService,
+    browserAutomationService,
+    processWindowService,
+    screenSize: () => platform.getScreenSize()
   });
   const baseBrowserAdapter = new LocalBrowserAutomationAdapter(
     browserService,
@@ -131,6 +200,8 @@ export function createSidofunRuntime(): SidofunRuntime {
     browserExtensionService,
     browserAutomationService,
     browserPlaywrightService,
+    browserPageQueryService,
+    browserWindowLayoutService,
     desktopScopeService,
     hfPapersService,
     openCliService,
@@ -171,6 +242,14 @@ export function createSidofunRuntime(): SidofunRuntime {
     browserExtensionService,
     browserAutomationService,
     browserPlaywrightService,
+    browserPageQueryService,
+    browserPageMacroService,
+    browserPageProfileService,
+    browserPageDomService,
+    browserPageReplayService,
+    browserContentGuardrailsService,
+    browserAgentService,
+    browserWindowLayoutService,
     browserAdapter,
     computer,
     localCoderAppsService,

@@ -17,6 +17,10 @@ import {
   loadBrowserExtensionWorkflowFile,
   validateBrowserExtensionWorkflowFile
 } from '../services/browser-extension/workflows/browserext-workflow-file-service.js';
+import {
+  loadBrowserPageProfilesFromFile,
+  resolveBrowserPageProfileFile
+} from '../services/browser-page-query/browser-page-profile-file-service.js';
 import type {
   BrowserExtensionNormalizedWorkflowFile,
   BrowserExtensionNormalizedWorkflowMetadata,
@@ -358,6 +362,14 @@ type BrowserExtensionScenarioStep =
   | (BrowserExtensionScenarioStepBase & { kind: 'context-state'; limit?: number })
   | (BrowserExtensionScenarioStepBase & { kind: 'fill'; query: string; value: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'fill-selector'; selector: string; value: string })
+  | (BrowserExtensionScenarioStepBase & {
+      kind: 'signup-form';
+      emailSelector: string;
+      passwordSelector: string;
+      emailValue: string;
+      passwordValue: string;
+      submitSelector?: string;
+    })
   | (BrowserExtensionScenarioStepBase & { kind: 'clear-selector'; selector: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'field-validation'; selector: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'click'; query: string })
@@ -366,6 +378,15 @@ type BrowserExtensionScenarioStep =
   | (BrowserExtensionScenarioStepBase & { kind: 'focus-selector'; selector: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'blur-selector'; selector?: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'commit-selector'; selector?: string })
+  | (BrowserExtensionScenarioStepBase & {
+      kind: 'complete-profile';
+      usernameSelector: string;
+      fullNameSelector: string;
+      usernameValue: string;
+      fullNameValue: string;
+      agreementSelector?: string;
+      submitSelector?: string;
+    })
   | (BrowserExtensionScenarioStepBase & { kind: 'radio'; query: string; value: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'segment'; query: string; value: string })
   | (BrowserExtensionScenarioStepBase & { kind: 'tab'; query: string; value: string })
@@ -548,10 +569,371 @@ export class OperatorService {
     return this.runtime.browserAutomationService.getRuntime(runtimeId);
   }
 
+  listBrowserRuntimeWindows(runtimeIds?: string[]) {
+    return this.runtime.browserWindowLayoutService.listRuntimeWindows(runtimeIds);
+  }
+
+  bindBrowserRuntimeWindow(runtimeId: string, windowHandle?: number) {
+    return this.runtime.browserWindowLayoutService.bindRuntimeWindow(runtimeId, windowHandle);
+  }
+
+  tileBrowserRuntimeWindows(options?: {
+    runtimeIds?: string[];
+    preset?: '2-up' | '3-column' | '2x2' | 'main-left' | 'main-right' | 'newsroom-5' | 'newsroom-6';
+    columns?: number;
+    gap?: number;
+    area?: { x: number; y: number; width: number; height: number };
+  }) {
+    return this.runtime.browserWindowLayoutService.tileRuntimeWindows(options);
+  }
+
   closeBrowserRuntime(runtimeId: string) {
     return this.runtime.browserPlaywrightService.closeRuntimePages(runtimeId)
       .catch(() => ({ runtimeId, closedPageIds: [] }))
       .then(() => this.runtime.browserAutomationService.closeRuntime(runtimeId));
+  }
+
+  listBrowserPages(runtimeId?: string) {
+    return this.runtime.browserPlaywrightService.listPages(runtimeId);
+  }
+
+  openBrowserPage(runtimeId: string, url?: string) {
+    return this.runtime.browserPlaywrightService.openPage(runtimeId, url);
+  }
+
+  getBrowserPage(pageId: string) {
+    return this.runtime.browserPlaywrightService.getPage(pageId);
+  }
+
+  closeBrowserPage(pageId: string) {
+    return this.runtime.browserPlaywrightService.closePage(pageId);
+  }
+
+  locateBrowserPage(pageId: string, query: string, options?: {
+    kind?: 'field' | 'button' | 'link' | 'any';
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    limit?: number;
+  }) {
+    return this.runtime.browserPageQueryService.locate(pageId, query, options);
+  }
+
+  fillBrowserPageQuery(pageId: string, query: string, value: string, options?: {
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  }) {
+    return this.runtime.browserPageQueryService.fillQuery(pageId, query, value, options);
+  }
+
+  clickBrowserPageQuery(pageId: string, query: string, options?: {
+    kind?: 'button' | 'link' | 'any' | 'field';
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  }) {
+    return this.runtime.browserPageQueryService.clickQuery(pageId, query, options);
+  }
+
+  submitBrowserPage(pageId: string, options?: {
+    query?: string;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  }) {
+    return this.runtime.browserPageQueryService.submit(pageId, options);
+  }
+
+  waitForBrowserPageText(pageId: string, text: string, options?: {
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageQueryService.waitForText(pageId, text, options);
+  }
+
+  formWorkflowBrowserPage(pageId: string, options: {
+    fields: Array<{ query: string; value: string }>;
+    submit?: boolean;
+    submitQuery?: string;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageQueryService.formWorkflow(pageId, options);
+  }
+
+  authLoginBrowserPage(pageId: string, options: {
+    email?: string;
+    username?: string;
+    password: string;
+    submitQuery?: string;
+    skipSubmit?: boolean;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageMacroService.authLogin(pageId, options);
+  }
+
+  authSignupBrowserPage(pageId: string, options: {
+    fullName?: string;
+    username?: string;
+    email?: string;
+    password: string;
+    confirmPassword?: string;
+    submitQuery?: string;
+    skipSubmit?: boolean;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageMacroService.authSignup(pageId, options);
+  }
+
+  openWorkflowBrowserPage(runtimeId: string, options: {
+    url: string;
+    fields: Array<{ query: string; value: string }>;
+    submit?: boolean;
+    submitQuery?: string;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageMacroService.openWorkflow(runtimeId, options);
+  }
+
+  openAndLoginBrowserPage(runtimeId: string, options: {
+    url: string;
+    email?: string;
+    username?: string;
+    password: string;
+    submitQuery?: string;
+    skipSubmit?: boolean;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageMacroService.openAndLogin(runtimeId, options);
+  }
+
+  openAndSignupBrowserPage(runtimeId: string, options: {
+    url: string;
+    fullName?: string;
+    username?: string;
+    email?: string;
+    password: string;
+    confirmPassword?: string;
+    submitQuery?: string;
+    skipSubmit?: boolean;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    waitUrlIncludes?: string;
+    waitText?: string;
+    waitSelector?: string;
+    waitNoSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    return this.runtime.browserPageMacroService.openAndSignup(runtimeId, options);
+  }
+
+  listBrowserPageProfiles(profileFile?: string) {
+    return this.resolveBrowserPageProfileService(profileFile).listProfiles();
+  }
+
+  getBrowserNavigationPolicy() {
+    return this.runtime.browserAutomationService.getNavigationPolicy();
+  }
+
+  setBrowserNavigationPolicy(options: {
+    enabled?: boolean;
+    allowList?: string[];
+    denyList?: string[];
+  }) {
+    return this.runtime.browserAutomationService.setNavigationPolicy(options);
+  }
+
+  getBrowserPageProfile(profileId: string, profileFile?: string) {
+    return this.resolveBrowserPageProfileService(profileFile).getProfile(profileId);
+  }
+
+  loginBrowserPageProfile(runtimeId: string, profileId: string, options: {
+    profileFile?: string;
+    url?: string;
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+    fullName?: string;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    const { profileFile, ...profileOptions } = options;
+    return this.resolveBrowserPageProfileService(profileFile).login(runtimeId, profileId, profileOptions);
+  }
+
+  signupBrowserPageProfile(runtimeId: string, profileId: string, options: {
+    profileFile?: string;
+    url?: string;
+    email?: string;
+    username?: string;
+    password?: string;
+    confirmPassword?: string;
+    fullName?: string;
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+    timeoutMs?: number;
+    intervalMs?: number;
+  }) {
+    const { profileFile, ...profileOptions } = options;
+    return this.resolveBrowserPageProfileService(profileFile).signup(runtimeId, profileId, profileOptions);
+  }
+
+  snapshotBrowserPageDom(pageId: string) {
+    return this.runtime.browserPageDomService.snapshot(pageId);
+  }
+
+  fillCommitBrowserPage(pageId: string, selector: string, value: string) {
+    return this.runtime.browserPageQueryService.fillCommit(pageId, selector, value);
+  }
+
+  waitReadyBrowserPage(pageId: string, selectors: string[], options?: { timeoutMs?: number; intervalMs?: number; stableReads?: number }) {
+    return this.runtime.browserPageQueryService.waitReady(pageId, selectors, options);
+  }
+
+  clickTextBrowserPage(pageId: string, text: string, options?: {
+    exact?: boolean;
+    withinSelector?: string;
+    topRegionOnly?: boolean;
+    topRegionMax?: number;
+    allowLinks?: boolean;
+    settleAfter?: 'dom' | 'page' | 'network';
+    settleTimeoutMs?: number;
+    settleStableReads?: number;
+  }) {
+    return this.runtime.browserPageQueryService.clickButtonText(pageId, text, options);
+  }
+
+  checkAgreementBrowserPage(pageId: string, options?: { selector?: string; labelTextIncludes?: string[] }) {
+    return this.runtime.browserPageQueryService.checkAgreement(pageId, options);
+  }
+
+  settleBrowserPage(pageId: string, mode: 'dom' | 'page' | 'network', options?: { timeoutMs?: number; intervalMs?: number; stableReads?: number; quietMs?: number }) {
+    return this.runtime.browserPageQueryService.settle(pageId, mode, options);
+  }
+
+  completeProfileBrowserPage(pageId: string, options: {
+    email: string;
+    username?: string;
+    fullName?: string;
+    usernameSelector?: string;
+    fullNameSelector?: string;
+    agreementSelector?: string;
+    agreementTextIncludes?: string[];
+    submitText?: string;
+    waitReadyTimeoutMs?: number;
+  }) {
+    return this.runtime.browserPageQueryService.completeProfile(pageId, options);
+  }
+
+  signupStepBrowserPage(pageId: string, options: {
+    email: string;
+    password: string;
+    emailSelector?: string;
+    passwordSelector?: string;
+    submitText?: string;
+    waitReadyTimeoutMs?: number;
+  }) {
+    return this.runtime.browserPageQueryService.signupStep(pageId, options);
+  }
+
+  scrollBrowserPage(pageId: string, direction: 'up' | 'down' | 'top' | 'bottom', query?: string) {
+    return this.runtime.browserPageQueryService.scroll(pageId, direction, query);
+  }
+
+  scrollBrowserPageToText(pageId: string, text: string, nth?: number) {
+    return this.runtime.browserPageQueryService.scrollToText(pageId, text, nth);
+  }
+
+  sendKeysBrowserPage(pageId: string, keys: string, query?: string) {
+    return this.runtime.browserPageQueryService.sendKeys(pageId, keys, query);
+  }
+
+  getBrowserPageSelectOptions(pageId: string, query: string, options: {
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  } = {}) {
+    return this.runtime.browserPageQueryService.getSelectOptions(pageId, query, options);
+  }
+
+  selectBrowserPageOption(pageId: string, query: string, text: string, options: {
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  } = {}) {
+    return this.runtime.browserPageQueryService.selectOption(pageId, query, text, options);
+  }
+
+  detectBrowserPageFileUploader(pageId: string, query: string, options: {
+    exact?: boolean;
+    formSelector?: string;
+    rootSelector?: string;
+  } = {}) {
+    return this.runtime.browserPageQueryService.detectFileUploader(pageId, query, options);
+  }
+
+  replayBrowserPage(pageId: string, actions: import('../services/browser-automation/types.js').BrowserPageRecordedAction[]) {
+    return this.runtime.browserPageReplayService.replay(pageId, actions);
+  }
+
+  runBrowserAgent(options: import('../services/browser-page-query/browser-agent-service.js').BrowserAgentRunOptions) {
+    return this.runtime.browserAgentService.run(options);
+  }
+
+  private resolveBrowserPageProfileService(profileFile?: string) {
+    const resolved = resolveBrowserPageProfileFile(profileFile);
+    if (!resolved) {
+      return this.runtime.browserPageProfileService;
+    }
+    const profiles = loadBrowserPageProfilesFromFile(resolved);
+    return this.runtime.browserPageProfileService.withProfiles(profiles);
   }
 
   listLocalCoders() {
