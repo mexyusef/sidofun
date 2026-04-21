@@ -532,18 +532,23 @@ export class OperatorService {
   }
 
   launchBrowser(options: {
-    browserId: BrowserId;
-    profile?: string;
-    url?: string;
-    privateMode?: boolean;
-    headless?: boolean;
-  }) {
+      browserId: BrowserId;
+      profile?: string;
+      url?: string;
+      privateMode?: boolean;
+      headless?: boolean;
+    }) {
+    const args = !options.headless && options.url
+      ? ['--new-window']
+      : undefined;
+
     return this.runtime.browserService.launchBrowser({
       browserId: options.browserId,
       profile: options.profile,
       url: options.url,
       privateMode: options.privateMode,
-      headless: options.headless
+      headless: options.headless,
+      args
     });
   }
 

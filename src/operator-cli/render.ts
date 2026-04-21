@@ -6,6 +6,27 @@ function formatRect(session: SessionInfo): string {
   return `${session.rect.width}x${session.rect.height} @ ${session.rect.x},${session.rect.y}`;
 }
 
+function quoteWindowsCommandArg(value: string): string {
+  if (value.length === 0) {
+    return '""';
+  }
+
+  if (!/[\s"]/.test(value)) {
+    return value;
+  }
+
+  // Render a cmd.exe-safe command preview for arguments that include spaces or quotes.
+  const escaped = value
+    .replace(/(\\*)"/g, '$1$1\\"')
+    .replace(/(\\+)$/g, '$1$1');
+
+  return `"${escaped}"`;
+}
+
+function formatWindowsCommand(command: string[]): string {
+  return command.map((part) => quoteWindowsCommandArg(part)).join(' ');
+}
+
 export function renderDoctor(status: DoctorStatus): string {
   return [
     'Sidofun Doctor',
@@ -48,10 +69,10 @@ export function renderBrowserProfiles(browserId: string, profiles: BrowserProfil
 export function renderBrowserLaunch(result: BrowserLaunchResult): string {
   return [
     `Browser launch: ${result.browserId}`,
-    `Executable: ${result.executablePath}`,
+    `Executable: ${quoteWindowsCommandArg(result.executablePath)}`,
     `PID: ${result.pid ?? 'n/a'}`,
     `Profile: ${result.usedProfile?.displayName || 'none'}`,
-    `Command: ${result.command.join(' ')}`,
+    `Command: ${formatWindowsCommand(result.command)}`,
     `Debug URL: ${result.remoteDebuggingUrl || 'n/a'}`
   ].join('\n');
 }

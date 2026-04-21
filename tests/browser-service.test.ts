@@ -263,4 +263,71 @@ describe('BrowserService', () => {
     ]);
     expect(result.usedProfile).toBeUndefined();
   });
+
+  test('launchBrowser keeps non-detached browser handoff process referenced', () => {
+    const root = makeTempDir();
+    const executablePath = path.join(root, 'chrome.exe');
+    fs.writeFileSync(executablePath, '');
+
+    let unrefCalled = false;
+    const service = new BrowserService({
+      definitions: [{
+        id: 'chrome',
+        displayName: 'Google Chrome',
+        executableCandidates: [executablePath],
+        userDataCandidates: [path.join(root, 'ChromeUserData')],
+        profileStrategy: 'chromium',
+        supportsProfileLaunch: true,
+        launchFlags: { privateMode: ['--incognito'], headless: ['--headless'] }
+      }],
+      spawnProcess: ((_file: string, _args?: readonly string[] | undefined, _options?: object) => ({
+        pid: 4321,
+        unref: () => {
+          unrefCalled = true;
+        }
+      })) as any
+    });
+
+    const result = service.launchBrowser({
+      browserId: 'chrome',
+      url: 'https://google.com'
+    });
+
+    expect(result.pid).toBe(4321);
+    expect(unrefCalled).toBe(false);
+  });
+
+  test('launchBrowser unreferences detached browser launches', () => {
+    const root = makeTempDir();
+    const executablePath = path.join(root, 'chrome.exe');
+    fs.writeFileSync(executablePath, '');
+
+    let unrefCalled = false;
+    const service = new BrowserService({
+      definitions: [{
+        id: 'chrome',
+        displayName: 'Google Chrome',
+        executableCandidates: [executablePath],
+        userDataCandidates: [path.join(root, 'ChromeUserData')],
+        profileStrategy: 'chromium',
+        supportsProfileLaunch: true,
+        launchFlags: { privateMode: ['--incognito'], headless: ['--headless'] }
+      }],
+      spawnProcess: ((_file: string, _args?: readonly string[] | undefined, _options?: object) => ({
+        pid: 4322,
+        unref: () => {
+          unrefCalled = true;
+        }
+      })) as any
+    });
+
+    const result = service.launchBrowser({
+      browserId: 'chrome',
+      url: 'https://google.com',
+      detached: true
+    });
+
+    expect(result.pid).toBe(4322);
+    expect(unrefCalled).toBe(true);
+  });
 });

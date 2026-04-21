@@ -496,8 +496,6 @@ PowerShell Sessions:
   sidofun pwsh close <session-id|index> [--json]
 
 
-
-
 Flags:
   --json       Output machine-readable JSON
   --cmd        Use CMD shell for `shell run`
@@ -536,13 +534,14 @@ Flags:
   --private    Launch browser in private/incognito mode when supported
   --headless   Launch browser headless when supported
 Typing Language:
-  Use quoted Sidofun escape strings with terminal type commands.
-
-  \n = Enter, \t = Tab, d500 = 500ms delay, M = maximize, m = minimize,
-  \r = restore, \f = focus
-
-
-
+  Use quoted Sidofun escape strings with terminal type commands:
+  <backslash>n = Enter,
+  <backslash>t = Tab,
+  <backslash>r = restore,
+  <backslash>f = focus
+  d500 = 500ms delay,
+  M = maximize,
+  m = minimize,
 
 Examples:
   sidofun doctor
@@ -752,9 +751,6 @@ Examples:
   sidofun pwsh status pwsh_123
   sidofun tui
 
-
-
-
 Notes:
   - `list` and `tabs` are aliases for tracked Sidofun sessions.
   - Session, scope, and terminal CLI commands use the local Sidofun daemon so tracked resources and owned-session metadata survive separate CLI runs.
@@ -775,3 +771,5 @@ Notes:
   - `coder run` is the maintained automation path for codex/opencode/qwen because they support non-interactive CLI execution.
   - `activate` selects the first tracked session whose title/tab title matches.
   - Session indexes are 1-based.
+  - to rebuild global C:\Users\usef\.bun\bin\sidofun.exe: cd C:\github-sido\kerjaan\sidofun-v2 && bun run bl
+ 

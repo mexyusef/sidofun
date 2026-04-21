@@ -17,14 +17,17 @@ import type {
 
 interface BrowserServiceOptions {
   definitions?: BrowserDefinition[];
+  spawnProcess?: typeof spawn;
 }
 
 export class BrowserService {
   private definitions: BrowserDefinition[];
   private libnut: any = null;
+  private readonly spawnProcess: typeof spawn;
 
   constructor(options: BrowserServiceOptions = {}) {
     this.definitions = options.definitions || createWindowsBrowserCatalog();
+    this.spawnProcess = options.spawnProcess || spawn;
   }
 
   listBrowsers(): BrowserInfo[] {
@@ -136,13 +139,15 @@ export class BrowserService {
 
   launchBrowser(options: BrowserLaunchOptions): BrowserLaunchResult {
     const launchPlan = this.buildLaunchCommand(options);
-    const child = spawn(launchPlan.command[0], launchPlan.command.slice(1), {
+    const child = this.spawnProcess(launchPlan.command[0], launchPlan.command.slice(1), {
       detached: options.detached ?? false,
       windowsHide: false,
       stdio: 'ignore'
     });
 
-    child.unref();
+    if (options.detached) {
+      child.unref();
+    }
 
     return {
       ...launchPlan,
